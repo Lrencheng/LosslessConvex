@@ -86,6 +86,8 @@ function optimal_result=solve_problem4(rocket)
             r_k=state_vec(1:3);%位矢
             v_k=state_vec(4:6);%速度
             z_k=state_vec(7);%ln(m)
+            %保证火箭的高度始终大于0
+            constraints=[constraints,r_k(1)>=0];
             %推力限幅约束问题2：松弛变量范围
             z0_k=log(m_wet-alpha*rho2*t(k));
             u1_k=rho1*exp(-z0_k);

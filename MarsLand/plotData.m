@@ -39,18 +39,18 @@ function plotData(optimal_result)
         figure;
         subplot(3,1,1);
         plot(t_plot, position_data(1,:), 'r-', 'LineWidth', 1.5);
-        ylabel('X位置 (m)');
+        ylabel('i位置 (m)');
         title('位置和速度随时间变化');
         grid on;
         
         subplot(3,1,2);
         plot(t_plot, position_data(2,:), 'g-', 'LineWidth', 1.5);
-        ylabel('Y位置 (m)');
+        ylabel('j位置 (m)');
         grid on;
         
         subplot(3,1,3);
         plot(t_plot, position_data(3,:), 'b-', 'LineWidth', 1.5);
-        ylabel('Z位置 (m)');
+        ylabel('k位置 (m)');
         xlabel('时间 t (s)');
         grid on;
         
@@ -75,10 +75,10 @@ function plotData(optimal_result)
         
         % 绘制三维轨迹图
         figure;
-        plot3(position_data(1,:), position_data(2,:), position_data(3,:), 'b-', 'LineWidth', 1.5);
+        plot3(position_data(3,:), position_data(2,:), position_data(1,:), 'b-', 'LineWidth', 1.5);
         hold on;
-        scatter3(position_data(1,1), position_data(2,1), position_data(3,1), 8, 'go', 'filled');  % 起点
-        scatter3(position_data(1,end), position_data(2,end), position_data(3,end), 8, 'ro', 'filled');  % 终点
+        scatter3(position_data(3,1), position_data(2,1), position_data(1,1), 8, 'go', 'filled');  % 起点
+        scatter3(position_data(3,end), position_data(2,end), position_data(1,end), 8, 'ro', 'filled');  % 终点
         xlabel('X位置 (m)');
         ylabel('Y位置 (m)');
         zlabel('Z位置 (m)');
