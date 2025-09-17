@@ -1,8 +1,4 @@
-%function main()
-    % Add YALMIP to path (if not already added)
-    addpath(genpath('yalmip'));
-    addpath(genpath('ecos'));
-    %parameters:
+%% parameters:
     g_mars=[-3.7114;0;0];
     m_dry=1505;
     m_wet=1905;
@@ -303,4 +299,3 @@
     else
         fprintf('未找到可行解，无法绘制推力图。\n');
     end
-%end
