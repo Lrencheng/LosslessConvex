@@ -9,6 +9,7 @@ function optimal_result=solve_problem4(rocket)
     x0=rocket.x0;
     rf=rocket.rf;
     vf=rocket.vf;
+    nf=rocket.nf;
     N_min=rocket.N_min;
     N_max=rocket.N_max;
     dt=rocket.dt;
@@ -68,6 +69,7 @@ function optimal_result=solve_problem4(rocket)
         x_f = xi{N+1} + Psi{N+1} * p(:);
         constraints = [constraints, norm(x_f(1:3)-rf)<=5];    % Final position
         constraints = [constraints, norm(x_f(4:6)-vf)<=5];    % Final velocity
+        constraints = [constraints, p(1+4*(N-1):3+4*(N-1))==p(4*N)*nf];
         for k=1:N
             %推力限幅约束问题1：松弛变量约束
             if k<=N

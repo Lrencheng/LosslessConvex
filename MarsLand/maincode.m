@@ -29,6 +29,10 @@ rocket.x0 = [rocket.r0; rocket.r0_dot;rocket.z0];
 rocket.rf=[0;0;0];
 rocket.vf=[0;0;0];
 
+%% 初始和结束的推力方向约束
+rocket.n0=[1;0;0];
+rocket.nf=[1;0;0];
+
 %% 时间参数
 rocket.dt=1;%单位[s]
 rocket.t_min=(rocket.m_wet-rocket.m_dry)*norm(rocket.r0_dot)/rocket.rho2;
