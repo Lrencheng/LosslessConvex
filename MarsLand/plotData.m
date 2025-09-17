@@ -14,18 +14,18 @@ function plotData(optimal_result)
     % 绘制推力水平(T/T_max)随时间变化图
     if optimal_result.id~=-1
         figure;
-        plot(t_plot, thrust_ratio, 'b-', 'LineWidth', 1.5);
+        plot(t_plot(1:end-1), thrust_ratio(1:end-1), 'b-', 'LineWidth', 1.5);
         xlabel('时间 t (s)');
-        ylabel('T/T_{max}');
+        ylabel('T/Tmax');
         title('最佳推力水平随时间变化');
         grid on;
         xlim([0, t_f_best]);
         ylim([0, 1]);
         
-        % 添加参考线
+        % 添加参考线 - 使用转义字符处理特殊符号
         hold on;
-        yline(0.3, 'r--', '最小推力 (30\% T_{max})');
-        yline(0.8, 'r--', '最大推力 (80\% T_{max})');
+        yline(0.3, 'r--', '最小推力 (30% Tmax)');
+        yline(0.8, 'r--', '最大推力 (80% Tmax)');
         hold off;
         
         % 显示统计信息
@@ -33,6 +33,8 @@ function plotData(optimal_result)
         fprintf('平均推力比: %.3f\n', mean(thrust_ratio));
         fprintf('最大推力比: %.3f\n', max(thrust_ratio));
         fprintf('最小推力比: %.3f\n', min(thrust_ratio));
+        
+        % 其余绘图代码保持不变...
         % 绘制位置随时间变化图
         figure;
         subplot(3,1,1);
@@ -75,8 +77,8 @@ function plotData(optimal_result)
         figure;
         plot3(position_data(1,:), position_data(2,:), position_data(3,:), 'b-', 'LineWidth', 1.5);
         hold on;
-        scatter3(position_data(1,1), position_data(2,1), position_data(3,1), 'go', 'filled', 'MarkerSize', 8);  % 起点
-        scatter3(position_data(1,end), position_data(2,end), position_data(3,end), 'ro', 'filled', 'MarkerSize', 8);  % 终点
+        scatter3(position_data(1,1), position_data(2,1), position_data(3,1), 8, 'go', 'filled');  % 起点
+        scatter3(position_data(1,end), position_data(2,end), position_data(3,end), 8, 'ro', 'filled');  % 终点
         xlabel('X位置 (m)');
         ylabel('Y位置 (m)');
         zlabel('Z位置 (m)');
@@ -96,5 +98,4 @@ function plotData(optimal_result)
     else
         fprintf('未找到可行解，无法绘制推力图。\n');
     end
-
 end
