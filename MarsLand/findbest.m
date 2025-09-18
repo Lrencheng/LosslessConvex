@@ -70,7 +70,7 @@ function optimal_result=findbest(results,rocket)
     pos_values=zeros(3, N+1);%位置
     vel_values=zeros(3, N+1);%速度
     acc_values=zeros(3,N+1);%加速度
-    theta_values=zeros(1,N+1);%角度
+    theta_values=zeros(1,N+1);%发动机推力与重力夹角角度
     thrust_ratio_values=zeros(N+1,1);
     for k=1:N+1
         state_vec_num = double(xi{k} + Psi{k} * optimal_result.p_opt);
@@ -78,7 +78,6 @@ function optimal_result=findbest(results,rocket)
         vel_values(:,k)=state_vec_num(4:6);
         z_k_num = state_vec_num(7);
         S=[0 1 0;0 0 1];
-        theta_values(k)=atand(norm(S*state_vec_num(1:3))/abs(state_vec_num(1)))
         M_values(k) = exp(z_k_num);
         z0k=log(m_wet-alpha*rho2*t(k));
         sigma_min(k)=rho1*exp(-z0k)*(1-(z_k_num-z0k)+(z_k_num-z0k)^2/2);
@@ -90,7 +89,8 @@ function optimal_result=findbest(results,rocket)
             Tnet_values(k) = norm(u_k_num) * M_values(k);
         else
             Tnet_values(k) = 0;
-        end    
+        end
+        theta_values(k)=atand(norm(u_k_num(2:3))/abs(u_k_num(1)));
     end
     thrust_ratio_values(:) = Tnet_values(:)./(n_engines *T_max*cosd(phi_cant));
     acc_values(2:3,:)=Tc_values(2:3,:)./repmat(M_values, 2, 1);
