@@ -19,6 +19,9 @@ rocket.rho2 = rocket.n_engines * rocket.T2 * cosd(rocket.phi_cant);  % Upper thr
 % 燃油质量消耗参数
 rocket.g_earth = 9.807;    % Earth gravity [m/s^2]
 rocket.alpha = 1 / (rocket.Isp * rocket.g_earth * cosd(rocket.phi_cant));
+
+% 滑翔角约束
+rocket.theta_alt=86;%单位：[deg]
 %% 初始条件
 rocket.r0=[1500;0;2000];
 rocket.r0_dot=[-75;0;100];
@@ -39,8 +42,8 @@ rocket.t_min=(rocket.m_wet-rocket.m_dry)*norm(rocket.r0_dot)/rocket.rho2;
 rocket.t_max=rocket.m_fuel/(rocket.alpha*rocket.rho1);
 rocket.N_min=fix(rocket.t_min/rocket.dt)+1;
 rocket.N_max=fix(rocket.t_max/rocket.dt);
-rocket.N_min=70;
-rocket.N_max=73;
+rocket.N_min=78;
+rocket.N_max=82;
 
 %% 预先计算状态空间方程参数
 rocket.A_c=[zeros(3,3),eye(3,3),zeros(3,1);

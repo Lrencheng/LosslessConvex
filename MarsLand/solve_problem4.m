@@ -18,6 +18,7 @@ function optimal_result=solve_problem4(rocket)
     phi_cant=rocket.phi_cant;
     A=rocket.A;
     B=rocket.B;
+    theta_alt=rocket.theta_alt;
     %% 定义results返回值
     num_iterations = N_max - N_min + 1;
     results = repmat(struct('N', 0, 't_f', 0, 'cost', 0, 'p_opt', [], ...
@@ -36,6 +37,10 @@ function optimal_result=solve_problem4(rocket)
         Lambda=cell(N+1,1);
         Upsilon=cell(N+1,1);
         xi=cell(N+1,1);
+        %滑翔角约束矩阵
+        S=[0 1 0;
+           0 0 1;];
+        c=[-tand(theta_alt) 0 0];
         for k=1:N+1  %N+1个时间点
             %Phi
             Phi{k}=zeros(7,7);
@@ -67,9 +72,11 @@ function optimal_result=solve_problem4(rocket)
         constraints = [];
         % 终止约束
         x_f = xi{N+1} + Psi{N+1} * p(:);
-        constraints = [constraints, norm(x_f(1:3)-rf)<=5];    % Final position
-        constraints = [constraints, norm(x_f(4:6)-vf)<=5];    % Final velocity
-        constraints = [constraints, p(1+4*(N-1):3+4*(N-1))==p(4*N)*nf];
+        %constraints = [constraints, norm(x_f(1:3)-rf)<=5];    % Final position
+        %constraints = [constraints, norm(x_f(4:6)-vf)<=5];    % Final velocity
+        constraints = [constraints, x_f(1:3)==rf];    % Final position
+        constraints = [constraints, x_f(4:6)==vf];    % Final velocity
+        constraints = [constraints, p(1+4*(N-1):3+4*(N-1))==p(4*N)*nf];%末端推力约束
         for k=1:N
             %推力限幅约束问题1：松弛变量约束
             if k<=N
@@ -88,6 +95,8 @@ function optimal_result=solve_problem4(rocket)
             z_k=state_vec(7);%ln(m)
             %保证火箭的高度始终大于0
             constraints=[constraints,r_k(1)>=0];
+            %滑翔角约束
+            constraints=[constraints,norm(S*r_k)+c*r_k<=0];
             %推力限幅约束问题2：松弛变量范围
             z0_k=log(m_wet-alpha*rho2*t(k));
             u1_k=rho1*exp(-z0_k);
@@ -97,7 +106,8 @@ function optimal_result=solve_problem4(rocket)
             constraints=[constraints,sigma_k>=sigma_k_min];
             constraints=[constraints,sigma_k<=sigma_k_max];
             %保证质量在物理规则范围内：
-            zk_min=max(log(m_wet-alpha*rho2*t(k)),log(m_dry));
+            %zk_min=max(log(m_wet-alpha*rho2*t(k)),log(m_dry));
+            zk_min=log(m_wet-alpha*rho2*t(k));
             zk_max=log(m_wet-alpha*rho1*t(k));
             constraints=[constraints,z_k>=zk_min];
             constraints=[constraints,z_k<=zk_max];
@@ -115,8 +125,9 @@ function optimal_result=solve_problem4(rocket)
         % 求解问题
         diagnostics = optimize(constraints,objective, options);
         % 存储结果
+        results(N-N_min+1).N = N;
+        results(N-N_min+1).feasible = false;
         if diagnostics.problem == 0
-            results(N-N_min+1).N = N;
             results(N-N_min+1).tf=N*dt;
             results(N-N_min+1).cost = value(objective);
             results(N-N_min+1).p_opt = value(p);
@@ -129,5 +140,6 @@ function optimal_result=solve_problem4(rocket)
             fprintf('  No feasible solution found.\n');
         end
     end
+    % ==================== 寻找最优结果 ====================
     optimal_result=findbest(results,rocket);
 end
