@@ -8,6 +8,7 @@ function plotData(optimal_result)
     position_data = optimal_result.pos;  % 获取位置数据
     velocity_data = optimal_result.vel;  % 获取速度数据
     accel_data  = optimal_result.acc;    % 获取加速度数据
+    theta_data = optimal_result.theta;
 
     % 构建时间向量
     t_plot = linspace(0, t_f_best, N_best+1)';
@@ -94,7 +95,12 @@ function plotData(optimal_result)
         title('三维飞行轨迹');
         legend('轨迹', '起点', '终点');
         grid on;
-        
+        %滑翔角
+        figure;
+        plot(t_plot(1:end-1),theta_data(1:end-1),'g-', 'LineWidth', 1.5);
+        ylabel('theta,deg');
+        title('滑翔角');
+        grid on;
         % 显示统计信息
         fprintf('位置统计信息:\n');
         fprintf('起始位置: [%.1f, %.1f, %.1f] m\n', position_data(1,1), position_data(2,1), position_data(3,1));
