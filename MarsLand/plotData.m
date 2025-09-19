@@ -80,7 +80,7 @@ function plotData(optimal_result)
         hold on;
         plot(t_plot, Tc_best(1,:), 'b-', 'LineWidth', 1.5);
         legend('TX', 'TY', 'TZ', 'Location', 'best');  % 添加图例及位置参数
-        ylabel('Thrust,m/s');
+        ylabel('Thrust,N');
         xlabel('t,s');
         grid on;
         % 绘制三维轨迹图

@@ -26,6 +26,10 @@ function optimal_result=findbest(results,rocket)
             best_idx=i;
         end
     end
+    %% 错误处理
+    if best_idx==-1
+       error('未找到可行解，无法绘制推力图');
+    end
     %%返回最优结果
     optimal_result=results(best_idx);
     optimal_result.id=best_idx;
@@ -83,18 +87,16 @@ function optimal_result=findbest(results,rocket)
         sigma_min(k)=rho1*exp(-z0k)*(1-(z_k_num-z0k)+(z_k_num-z0k)^2/2);
         sigma_max(k)=rho2*exp(-z0k)*(1-(z_k_num-z0k));
         sigma(k)=Upsilon{k}(4,:) * optimal_result.p_opt;
-        if k <= N
-            u_k_num = double(Upsilon{k}(1:3,:) * optimal_result.p_opt);
-            Tc_values(:,k)=u_k_num;
-            Tnet_values(k) = norm(u_k_num) * M_values(k);
-        else
-            Tnet_values(k) = 0;
-        end
+
+        u_k_num = double(Upsilon{k}(1:3,:) * optimal_result.p_opt);
+        Tc_values(:,k)=u_k_num.*M_values(k);
+        Tnet_values(k) = norm(u_k_num) * M_values(k);
+
         theta_values(k)=atand(norm(u_k_num(2:3))/abs(u_k_num(1)));
     end
     thrust_ratio_values(:) = Tnet_values(:)./(n_engines *T_max*cosd(phi_cant));
     acc_values(2:3,:)=Tc_values(2:3,:)./repmat(M_values, 2, 1);
-    acc_values(1,:)=(Tc_values(1,:)+g_mars(1))./M_values(1,:);
+    acc_values(1,:)=Tc_values(1,:)./M_values(1,:)+g_mars(1);
     optimal_result.M = M_values;      % 存储质量
     optimal_result.Tnet = Tnet_values;% 存储净推力
     optimal_result.Tc = Tc_values;% 存储三维推力

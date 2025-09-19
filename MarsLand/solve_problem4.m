@@ -10,6 +10,8 @@ function optimal_result=solve_problem4(rocket)
     rf=rocket.rf;
     vf=rocket.vf;
     nf=rocket.nf;
+    v=rocket.v;
+    gamma=rocket.gamma;
     N_min=rocket.N_min;
     N_max=rocket.N_max;
     dt=rocket.dt;
@@ -74,17 +76,20 @@ function optimal_result=solve_problem4(rocket)
         x_f = xi{N+1} + Psi{N+1} * p(:);
         %constraints = [constraints, norm(x_f(1:3)-rf)<=5];    % Final position
         %constraints = [constraints, norm(x_f(4:6)-vf)<=5];    % Final velocity
-        constraints = [constraints, x_f(1:3)==rf];    % Final position
-        constraints = [constraints, x_f(4:6)==vf];    % Final velocity
-        constraints = [constraints, p(1+4*(N-1):3+4*(N-1))==p(4*N)*nf];%末端推力约束
-        for k=1:N
+        constraints = [constraints, norm(x_f(1:3) - rf) <= 1e-2];
+        constraints = [constraints, norm(x_f(4:6) - vf) <= 1e-2];
+        u_f = Upsilon{N}(1:3, :) * p;  % 末端控制加速度
+        sigma_f = Upsilon{N}(4, :) * p; % 末端松弛变量
+        %constraints = [constraints, u_f == sigma_f * nf]; % 推力方向约束
+
+        for k=1:N+1
             %推力限幅约束问题1：松弛变量约束
-            if k<=N
-                sigma_k=Upsilon{k}(4,:)*p(:);
-                u_k=Upsilon{k}(1:3,:)*p(:);
-            else
+            if k==1
                 sigma_k=0;
                 u_k=zeros(3,1);
+            else
+                sigma_k=Upsilon{k-1}(4,:)*p(:);
+                u_k=Upsilon{k-1}(1:3,:)*p(:);
             end
             constraints=[constraints,norm(u_k)<=sigma_k];
             %计算状态变量
@@ -98,13 +103,17 @@ function optimal_result=solve_problem4(rocket)
             %滑翔角约束
             %constraints=[constraints,norm(S*r_k)+c*r_k<=0];
             %推力限幅约束问题2：松弛变量范围
-            z0_k=log(m_wet-alpha*rho2*t(k));
-            u1_k=rho1*exp(-z0_k);
-            u2_k=rho2*exp(-z0_k);
-            sigma_k_min=u1_k*(1-(z_k-z0_k)+(z_k-z0_k)^2/2);
-            sigma_k_max=u2_k*(1-(z_k-z0_k));
-            constraints=[constraints,sigma_k>=sigma_k_min];
-            constraints=[constraints,sigma_k<=sigma_k_max];
+            %推力指向约束
+            %constraints=[constraints,v'*u_k>=gamma*sigma_k];
+            if k>1
+                z0_k=log(m_wet-alpha*rho2*t(k));
+                u1_k=rho1*exp(-z0_k);
+                u2_k=rho2*exp(-z0_k);
+                sigma_k_min=u1_k*(1-(z_k-z0_k)+(z_k-z0_k)^2/2);
+                sigma_k_max=u2_k*(1-(z_k-z0_k));
+                constraints=[constraints,sigma_k>=sigma_k_min];
+                constraints=[constraints,sigma_k<=sigma_k_max];
+            end
             %保证质量在物理规则范围内：
             %zk_min=max(log(m_wet-alpha*rho2*t(k)),log(m_dry));
             zk_min=log(m_wet-alpha*rho2*t(k));
@@ -122,6 +131,7 @@ function optimal_result=solve_problem4(rocket)
         % ==================== 求解优化问题 ====================
         % 设置ECOS求解器
         options = sdpsettings('solver', 'ecos', 'verbose', 0, 'cachesolvers', 1);
+        
         % 求解问题
         diagnostics = optimize(constraints,objective, options);
         % 存储结果
