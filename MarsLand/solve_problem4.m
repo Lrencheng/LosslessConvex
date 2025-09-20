@@ -80,8 +80,7 @@ function optimal_result=solve_problem4(rocket)
         constraints = [constraints, norm(x_f(4:6) - vf) <= 1e-2];
         u_f = Upsilon{N}(1:3, :) * p;  % 末端控制加速度
         sigma_f = Upsilon{N}(4, :) * p; % 末端松弛变量
-        %constraints = [constraints, u_f == sigma_f * nf]; % 推力方向约束
-
+        constraints = [constraints, u_f == sigma_f * nf]; % 推力方向约束
         for k=1:N+1
             %推力限幅约束问题1：松弛变量约束
             if k==1
@@ -99,12 +98,12 @@ function optimal_result=solve_problem4(rocket)
             v_k=state_vec(4:6);%速度
             z_k=state_vec(7);%ln(m)
             %保证火箭的高度始终大于0
-            %constraints=[constraints,r_k(1)>=0];
+            constraints=[constraints,r_k(1)>=0];
             %滑翔角约束
-            %constraints=[constraints,norm(S*r_k)+c*r_k<=0];
+            constraints=[constraints,norm(S*r_k)+c*r_k<=0];
             %推力限幅约束问题2：松弛变量范围
             %推力指向约束
-            %constraints=[constraints,v'*u_k>=gamma*sigma_k];
+            constraints=[constraints,v'*u_k>=gamma*sigma_k];
             if k>1
                 z0_k=log(m_wet-alpha*rho2*t(k));
                 u1_k=rho1*exp(-z0_k);

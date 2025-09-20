@@ -14,33 +14,10 @@ function plotData(optimal_result)
     t_plot = linspace(0, t_f_best, N_best+1)';
     % 提取推力比
     thrust_ratio = optimal_result.thrust_ratio;
-    % 绘制推力水平(T/T_max)随时间变化图
     if optimal_result.id~=-1
         figure;
-        plot(t_plot(1:end-1), thrust_ratio(1:end-1), 'b-', 'LineWidth', 1.5);
-        xlabel('时间 t (s)');
-        ylabel('T/Tmax');
-        title('最佳推力水平随时间变化');
-        grid on;
-        xlim([0, t_f_best]);
-        ylim([0, 1]);
-        
-        % 添加参考线 - 使用转义字符处理特殊符号
-        hold on;
-        yline(0.3, 'r--', '最小推力 (30% Tmax)');
-        yline(0.8, 'r--', '最大推力 (80% Tmax)');
-        hold off;
-        
-        % 显示统计信息
-        fprintf('最优轨迹时间tf:%d\n',t_f_best);
-        fprintf('推力统计信息:\n');
-        fprintf('平均推力比: %.3f\n', mean(thrust_ratio));
-        fprintf('最大推力比: %.3f\n', max(thrust_ratio));
-        fprintf('最小推力比: %.3f\n', min(thrust_ratio));
-        
-        % 其余绘图代码保持不变...
         % 绘制位置随时间变化图
-        figure;
+        subplot(3,2,1);
         plot(t_plot, position_data(3,:), 'r-', 'LineWidth', 1.5);
         hold on;       
         plot(t_plot, position_data(2,:), 'g-', 'LineWidth', 1.5);
@@ -50,8 +27,8 @@ function plotData(optimal_result)
         ylabel('position,m');
         xlabel('t,s');
         grid on;
-        % 绘制速度随时间变化图
-        figure;
+         % 绘制速度随时间变化图
+        subplot(3,2,2);
         plot(t_plot, velocity_data(3,:), 'r-', 'LineWidth', 1.5);
         hold on;
         plot(t_plot, velocity_data(2,:), 'g-', 'LineWidth', 1.5);
@@ -62,7 +39,7 @@ function plotData(optimal_result)
         xlabel('t,s');
         grid on;
         %绘制加速度曲线图
-        figure;
+        subplot(3,2,3);
         plot(t_plot, accel_data(3,:), 'r-', 'LineWidth', 1.5);
         hold on;
         plot(t_plot, accel_data(2,:), 'g-', 'LineWidth', 1.5);
@@ -73,7 +50,7 @@ function plotData(optimal_result)
         xlabel('t,s');
         grid on;
         %绘制推力曲线图
-        figure;
+        subplot(3,2,4);
         plot(t_plot, Tc_best(3,:), 'r-', 'LineWidth', 1.5);
         hold on;
         plot(t_plot, Tc_best(2,:), 'g-', 'LineWidth', 1.5);
@@ -82,6 +59,32 @@ function plotData(optimal_result)
         legend('TX', 'TY', 'TZ', 'Location', 'best');  % 添加图例及位置参数
         ylabel('Thrust,N');
         xlabel('t,s');
+        grid on;
+        % 绘制推力水平(T/T_max)随时间变化图
+        subplot(3,2,5);
+        plot(t_plot(1:end-1), thrust_ratio(1:end-1), 'b-', 'LineWidth', 1.5);
+        xlabel('时间 t (s)');
+        ylabel('T/Tmax');
+        title('最佳推力水平随时间变化');
+        grid on;
+        xlim([0, t_f_best]);
+        ylim([0, 1]);       
+            % 添加参考线 - 使用转义字符处理特殊符号
+        hold on;
+        yline(0.3, 'r--', '最小推力 (30% Tmin)');
+        yline(0.8, 'r--', '最大推力 (80% Tmax)');
+        hold off;
+            % 显示统计信息
+        fprintf('最优轨迹时间tf:%d\n',t_f_best);
+        fprintf('推力统计信息:\n');
+        fprintf('平均推力比: %.3f\n', mean(thrust_ratio));
+        fprintf('最大推力比: %.3f\n', max(thrust_ratio));
+        fprintf('最小推力比: %.3f\n', min(thrust_ratio));
+        %滑翔角
+        subplot(3,2,6);
+        plot(t_plot(1:end-1),theta_data(1:end-1),'g-', 'LineWidth', 1.5);
+        ylabel('theta,deg');
+        title('滑翔角');
         grid on;
         % 绘制三维轨迹图
         figure;
@@ -94,12 +97,6 @@ function plotData(optimal_result)
         zlabel('Z位置 (m)');
         title('三维飞行轨迹');
         legend('轨迹', '起点', '终点');
-        grid on;
-        %滑翔角
-        figure;
-        plot(t_plot(1:end-1),theta_data(1:end-1),'g-', 'LineWidth', 1.5);
-        ylabel('theta,deg');
-        title('滑翔角');
         grid on;
         % 显示统计信息
         fprintf('位置统计信息:\n');
