@@ -57,12 +57,14 @@ function optimal_result=solve_problem4(rocket)
             for j=1:min(k-1,N)
                 Psi{k}(:,1+4*(j-1):4*j)=A^(k-j-1)*B;
             end
+            %TODO:debug
             %Upsilon
             if k<=N
                 Upsilon{k}=[zeros(4,4*(k-1)),eye(4),zeros(4,4*(N-k))];
             else
                 Upsilon{k}=zeros(4,4*N);
             end
+            %debug
             %xi 重力+初始条件
             xi{k}=zeros(7,1);
             xi{k}=Phi{k}*x0+Lambda{k}*[g_mars;0];
@@ -81,6 +83,9 @@ function optimal_result=solve_problem4(rocket)
         u_f = Upsilon{N}(1:3, :) * p;  % 末端控制加速度
         sigma_f = Upsilon{N}(4, :) * p; % 末端松弛变量
         constraints = [constraints, u_f == sigma_f * nf]; % 推力方向约束
+        state_vec=cell(N+1,1);%状态变量
+        zk_min=zeros(N+1,1);
+        zk_max=zeros(N+1,1);
         for k=1:N+1
             %推力限幅约束问题1：松弛变量约束
             if k==1
@@ -92,11 +97,11 @@ function optimal_result=solve_problem4(rocket)
             end
             constraints=[constraints,norm(u_k)<=sigma_k];
             %计算状态变量
-            state_vec=zeros(7,1);%1:3->r,4:6->v,7->z
-            state_vec=xi{k}+Psi{k}*p(:);
-            r_k=state_vec(1:3);%位矢
-            v_k=state_vec(4:6);%速度
-            z_k=state_vec(7);%ln(m)
+            state_vec{k}=zeros(7,1);%1:3->r,4:6->v,7->z
+            state_vec{k}=xi{k}+Psi{k}*p(:);
+            r_k=state_vec{k}(1:3);%位矢
+            v_k=state_vec{k}(4:6);%速度
+            z_k=state_vec{k}(7);%ln(m)
             %保证火箭的高度始终大于0
             constraints=[constraints,r_k(1)>=0];
             %滑翔角约束
@@ -115,10 +120,12 @@ function optimal_result=solve_problem4(rocket)
             end
             %保证质量在物理规则范围内：
             %zk_min=max(log(m_wet-alpha*rho2*t(k)),log(m_dry));
-            zk_min=log(m_wet-alpha*rho2*t(k));
-            zk_max=log(m_wet-alpha*rho1*t(k));
-            constraints=[constraints,z_k>=zk_min];
-            constraints=[constraints,z_k<=zk_max];
+            zk_min(k)=log(m_wet-alpha*rho2*t(k));
+            zk_max(k)=log(m_wet-alpha*rho1*t(k));
+            constraints=[constraints,z_k>=zk_min(k)];
+            constraints=[constraints,z_k<=zk_max(k)];
+
+            
         end
         % ==================== 计算代价函数 ====================
          % Minimize fuel consumption: J = ∫σ dt ≈ Σσ_k * Δt

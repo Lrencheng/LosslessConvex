@@ -91,8 +91,7 @@ function optimal_result=findbest(results,rocket)
         u_k_num = double(Upsilon{k}(1:3,:) * optimal_result.p_opt);
         Tc_values(:,k)=u_k_num.*M_values(k);
         Tnet_values(k) = norm(u_k_num) * M_values(k);
-
-        theta_values(k)=atand(norm(u_k_num(2:3))/abs(u_k_num(1)));
+        theta_values(k)=atan2d(norm(u_k_num(2:3)),u_k_num(1));
     end
     thrust_ratio_values(:) = Tnet_values(:)./(n_engines *T_max*cosd(phi_cant));
     acc_values(2:3,:)=Tc_values(2:3,:)./repmat(M_values, 2, 1);
