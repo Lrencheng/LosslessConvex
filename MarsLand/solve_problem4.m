@@ -98,57 +98,69 @@ function optimal_result=solve_problem4(rocket)
         constraints = [];
         % 终止约束
         x_f = xi{N+1} + Psi{N+1} * p(:);
-        %constraints = [constraints, norm(x_f(1:3)-rf)<=5];    % Final position
-        %constraints = [constraints, norm(x_f(4:6)-vf)<=5];    % Final velocity
         constraints = [constraints, norm(x_f(1:3) - rf) <= 1e-2];
         constraints = [constraints, norm(x_f(4:6) - vf) <= 1e-2];
-        u_f = Upsilon{N}(1:3, :) * p;  % 末端控制加速度
-        sigma_f = Upsilon{N}(4, :) * p; % 末端松弛变量
+        u_f = Upsilon{N}(1:3, :) * p(:);  % 末端控制加速度
+        sigma_f = Upsilon{N}(4, :) * p(:); % 末端松弛变量
         constraints = [constraints, u_f == sigma_f * nf]; % 推力方向约束
-        state_vec=cell(N+1,1);%状态变量
-        zk_min=zeros(N+1,1);
-        zk_max=zeros(N+1,1);
-        for k=1:N+1
-            %推力限幅约束问题1：松弛变量约束
-            if k==1
-                sigma_k=0;
-                u_k=zeros(3,1);
-            else
-                sigma_k=Upsilon{k-1}(4,:)*p(:);
-                u_k=Upsilon{k-1}(1:3,:)*p(:);
-            end
-            constraints=[constraints,norm(u_k)<=sigma_k];
-            %计算状态变量
-            state_vec{k}=zeros(7,1);%1:3->r,4:6->v,7->z
-            state_vec{k}=xi{k}+Psi{k}*p(:);
-            r_k=state_vec{k}(1:3);%位矢
-            v_k=state_vec{k}(4:6);%速度
-            z_k=state_vec{k}(7);%ln(m)
-            %保证火箭的高度始终大于0
-            constraints=[constraints,r_k(1)>=0];
-            %滑翔角约束
-            %constraints=[constraints,norm(S*r_k)+c*r_k<=0];
-            %推力限幅约束问题2：松弛变量范围
-            %推力指向约束
-            %constraints=[constraints,v'*u_k>=gamma*sigma_k];
-            if k>1
-                z0_k=log(m_wet-alpha*rho2*t(k));
-                u1_k=rho1*exp(-z0_k);
-                u2_k=rho2*exp(-z0_k);
-                sigma_k_min=u1_k*(1-(z_k-z0_k)+(z_k-z0_k)^2/2);
-                sigma_k_max=u2_k*(1-(z_k-z0_k));
-                constraints=[constraints,sigma_k>=sigma_k_min];
-                constraints=[constraints,sigma_k<=sigma_k_max];
-            end
-            %保证质量在物理规则范围内：
-            %zk_min=max(log(m_wet-alpha*rho2*t(k)),log(m_dry));
-            zk_min(k)=log(m_wet-alpha*rho2*t(k));
-            zk_max(k)=log(m_wet-alpha*rho1*t(k));
-            constraints=[constraints,z_k>=zk_min(k)];
-            constraints=[constraints,z_k<=zk_max(k)];
 
-            
+        %预计算所有的sigma和u
+        all_u=sdpvar(3,N);
+        all_sigma=sdpvar(1,N);
+        for j=1:N
+            all_u(1:3,j)=Upsilon{j}(1:3, :) * p(:);
+            all_sigma(1,j)=Upsilon{j}(4, :) * p(:);
         end
+
+        %推力限幅约束问题1：松弛变量约束
+        for k = 1:N
+            constraints = [constraints, norm(all_u(:,k)) <= all_sigma(1,k)];
+        end
+        %预计算所有状态变量
+        all_states = sdpvar(7, N+1);
+        for k = 1:N+1
+            all_states(:, k) = xi{k} + Psi{k} * p(:);
+        end
+        % 提取所有高度和z变量
+        all_heights = all_states(1, :);  % 所有时间步的高度
+        all_z = all_states(7, :);        % 所有时间步的z变量
+
+        % 预计算所有zk_min和zk_max
+        zk_min_vec = arrayfun(@(k) log(m_wet - alpha*rho2*t(k)), 1:N+1);
+        zk_max_vec = arrayfun(@(k) log(m_wet - alpha*rho1*t(k)), 1:N+1);
+        % 向量化高度约束和质量约束
+        constraints =[constraints,all_z >= zk_min_vec];
+        constraints =[constraints,all_heights(:) >= 0];
+        constraints =[constraints,all_z(:) <= zk_max_vec(:)];
+        %{
+        constraints = [constraints,...
+            all_heights >= 0,...                    %保证火箭的高度始终大于0
+            all_z >= zk_min_vec,...                 % 所有zk_min约束
+            all_z <= zk_max_vec];                % 所有zk_max约束
+        %}
+            
+        % 向量化推力指向约束
+        % constraints = [constraints, v' * all_u >= gamma * all_sigma];
+
+        %推力限幅约束问题2：松弛变量范围
+        %非线性约束，无法使用向量化约束
+        for k = 2:N+1
+            z0_k = log(m_wet - alpha*rho2*t(k));
+            z_k = all_z(k);
+            u1_k = rho1 * exp(-z0_k);
+            u2_k = rho2 * exp(-z0_k);
+            sigma_k_min = u1_k * (1 - (z_k - z0_k) + (z_k - z0_k)^2/2);
+            sigma_k_max = u2_k * (1 - (z_k - z0_k));
+            if k > 1
+                sigma_k = all_sigma(k-1);
+                constraints = [constraints, sigma_k >= sigma_k_min, sigma_k <= sigma_k_max];
+            end
+        end
+        % 滑翔角约束（如果启用）
+        % for k = 1:N+1
+        %     r_k = all_states(1:3, k);
+        %     constraints = [constraints, norm(S*r_k) + c*r_k <= 0];
+        % end
         % ==================== 计算代价函数 ====================
          % Minimize fuel consumption: J = ∫σ dt ≈ Σσ_k * Δt
         objective = 0;
