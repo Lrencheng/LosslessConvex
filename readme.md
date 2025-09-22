@@ -40,6 +40,10 @@ todo：
 - 优化代码：
   1. 进一步优化矩阵计算：将A^powers预设为大小为Nmax的矩阵，进一步降低计算速度
   2. 使用稀疏矩阵：如果 Upsilon 等矩阵很稀疏，可以考虑使用稀疏矩阵表示
+  3. github上找到一篇用julia做的开源代码，不知道效果怎么样https://github.com/UW-ACL/SCPToolbox.jl/tree/master/test/examples/rocket_landing
 problem solved:
 - 成功发现并解决了一个重大问题：
   - 9/20发现的问题终于找到了问题所在，是因为向量化建模的数据类型问题，所有放在constraints中的约束中的向量最好是sdpvar创建的数据，或者cell，而不能是zeros创建的double数据
+problem:
+- matlab和最新版的yalmip都没有norms函数？只能用norm + 循环代替了
+- 还是没能完美复现论文中的实验

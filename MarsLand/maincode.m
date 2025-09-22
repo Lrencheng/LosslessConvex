@@ -43,8 +43,8 @@ rocket.t_min=(rocket.m_wet-rocket.m_dry)*norm(rocket.r0_dot)/rocket.rho2;
 rocket.t_max=rocket.m_fuel/(rocket.alpha*rocket.rho1);
 rocket.N_min=fix(rocket.t_min/rocket.dt)+1;
 rocket.N_max=fix(rocket.t_max/rocket.dt);
-rocket.N_min=73;
-rocket.N_max=80;
+rocket.N_min=70;
+rocket.N_max=75;
 
 %% 预先计算状态空间方程参数
 rocket.A_c=[zeros(3,3),eye(3,3),zeros(3,1);

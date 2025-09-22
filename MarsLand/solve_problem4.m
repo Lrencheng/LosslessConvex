@@ -87,7 +87,7 @@ function optimal_result=solve_problem4(rocket)
             xi{k}=zeros(7,1);
             xi{k}=Phi{k}*x0+Lambda{k}*[g_mars;0];
         end
-        
+
         %测量时间
         cal_time=toc(cal_start);
         build_start=tic;
@@ -98,11 +98,11 @@ function optimal_result=solve_problem4(rocket)
         constraints = [];
         % 终止约束
         x_f = xi{N+1} + Psi{N+1} * p(:);
-        constraints = [constraints, norm(x_f(1:3) - rf) <= 1e-2];
-        constraints = [constraints, norm(x_f(4:6) - vf) <= 1e-2];
+        constraints = [constraints, norm(x_f(1:3) - rf) <= 1e-5];
+        constraints = [constraints, norm(x_f(4:6) - vf) <= 1e-5];
         u_f = Upsilon{N}(1:3, :) * p(:);  % 末端控制加速度
         sigma_f = Upsilon{N}(4, :) * p(:); % 末端松弛变量
-        constraints = [constraints, u_f == sigma_f * nf]; % 推力方向约束
+        %constraints = [constraints, u_f == sigma_f * nf]; % 推力方向约束
 
         %预计算所有的sigma和u
         all_u=sdpvar(3,N);
@@ -129,9 +129,9 @@ function optimal_result=solve_problem4(rocket)
         zk_min_vec = arrayfun(@(k) log(m_wet - alpha*rho2*t(k)), 1:N+1);
         zk_max_vec = arrayfun(@(k) log(m_wet - alpha*rho1*t(k)), 1:N+1);
         % 向量化高度约束和质量约束
+        %constraints =[constraints,all_heights(:) >= 0];
         constraints =[constraints,all_z >= zk_min_vec];
-        constraints =[constraints,all_heights(:) >= 0];
-        constraints =[constraints,all_z(:) <= zk_max_vec(:)];
+        constraints =[constraints,all_z<= zk_max_vec];
         %{
         constraints = [constraints,...
             all_heights >= 0,...                    %保证火箭的高度始终大于0
