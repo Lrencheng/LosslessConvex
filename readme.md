@@ -1,8 +1,6 @@
 # 论文复现结果
 ## 实验一：problem4 without no-subsurface flight constraint.
-初始条件：
-$r=[1.5,0,2]^T$km,
-$\dot{r}_0=[-75,0,100]^T$m/s
+初始条件： $r=[1.5,0,2]^T$ km, $\dot{r}_0=[-75,0,100]^T$ m/s
 
 
 仿真结果：
@@ -23,8 +21,8 @@ $\dot{r}_0=[-75,0,100]^T$m/s
     3. 论文中，t=tf时，推力水平在58%左右，但是我的结果中，t=tf时推力水平为30%
 ## 实验二：problem4 with no-subsurface flight constraint.
 初始条件：
-$r=[1.5,0,2]^T$km,
-$\dot{r}_0=[-75,0,100]^T$m/s
+r0=[1.5;0;2]km,
+v0=[-75;0;100]m/s
 
 增加约束：
 $r(1)>=0$
@@ -43,9 +41,7 @@ $r(1)>=0$
     1. 论文中，最优燃料消耗为390.4kg，但是我的最优结果是393.26kg
     2. 论文中，t=tf时，推力水平在60%左右，但是我的结果中，t=tf时推力水平为33%
 ## 实验三：problem4 without glide slope constraint.
-初始条件：
-$r=[1.5,0,2]^T$km,
-$\dot{r}_0=[-75,0,100]^T$m/s
+初始条件： $r=[1.5,0,2]^T$ km, $\dot{r}_0=[-75,0,100]^T$ m/s
 
 增加约束：
 $r(1)>=0$
@@ -65,9 +61,7 @@ ${\theta}_{alt}<=86deg$
     1. 论文中，最优燃料消耗为399.5kg，但是我的最优结果是400.95kg，已经超过了fuel=400kg的预设
     2. 论文中，t=tf时，推力水平在60%左右，但是我的结果中，t=tf时推力水平仍为33%
 ## 实验四：problem4 without thrust pointing constraint.
-初始条件：
-$r=[5,0,0]^T$km,
-$\dot{r}_0=[0,0,0]^T$m/s
+初始条件： $r=[5,0,0]^T$ km, $\dot{r}_0=[0,0,0]^T$ m/s
 
 增加约束：
 $r(1)>=0$
@@ -89,14 +83,12 @@ ${\theta}_{alt}<=86deg$
 >疑问：无论是文献还是我的仿真，都出现了在10-20s曲线内的一个异常值点，超出了推力30%最低限制，不太清楚背后的原因是什么
 
 ## 实验五：problem4 with thrust pointing constraint.
-初始条件：
-$r=[5,0,0]^T$km,
-$\dot{r}_0=[20,0,0]^T$m/s
+初始条件： $r=[5,0,0]^T$ km, $\dot{r}_0=[20,0,0]^T$ m/s
 
 增加约束：
 $r(1)>=0$
 ${\theta}_{alt}<=86deg$
-$v^Tu(t)>=\gamma*\sigma(t)$,$\gamma=0$,$v^T=[1,0,0]$
+$v^Tu(t)>=\gamma*\sigma(t)$, $\gamma=0$ , $v^T=[1,0,0]$
 
 仿真结果：
 |<img src="./assets/实验五数据图.svg"> |
