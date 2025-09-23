@@ -1,4 +1,7 @@
-# 论文复现结果
+## LosslessConvex:基于无损凸化的火星着陆轨迹优化
+
+>文章来源：[Convex Programming Approach to Powered Descent Guidance for Mars Landing](https://arc.aiaa.org/doi/10.2514/1.27553)
+
 ## 实验一：problem4 without no-subsurface flight constraint.
 初始条件： $r=[1.5,0,2]^T$ km, $\dot{r}_0=[-75,0,100]^T$ m/s
 
