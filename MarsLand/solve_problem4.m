@@ -21,6 +21,10 @@ function optimal_result=solve_problem4(rocket)
     A=rocket.A;
     B=rocket.B;
     theta_alt=rocket.theta_alt;
+    CONSTRAINTS_FINAL_THRUST_DRECT=rocket.CONSTRAINTS_FINAL_THRUST_DRECT;
+    CONSTRAINTS_HEIGHT=rocket.CONSTRAINTS_HEIGHT;            
+    CONSTRAINTS_ALL_THRUST_DRECT=rocket.CONSTRAINTS_ALL_THRUST_DRECT; 
+    CONSTRAINTS_GLIDE=rocket.CONSTRAINTS_GLIDE;             
     %滑翔角约束矩阵
     S=[0 1 0;
         0 0 1;];
@@ -30,11 +34,8 @@ function optimal_result=solve_problem4(rocket)
     results = repmat(struct('N', 0, 't_f', 0, 'cost', 0, 'p_opt', [], ...
                        'feasible', false, 'M', {}, 'T', {}, ...
                        'pos', {}, 'vel', {}), num_iterations, 1);
-    time_vec=zeros(4,num_iterations);
+    solver_time=zeros(num_iterations,2);
     for N=N_min:N_max
-        %测量总求解时间
-        total_start=tic;
-        cal_start=tic;
         %% A的幂次序列-简化计算
         A_powers = cell(N+1, 1);
         A_powers{1} = eye(size(A,1));
@@ -66,31 +67,21 @@ function optimal_result=solve_problem4(rocket)
             if k>=2
                 Lambda{k}=Lambda{k-1}+A_powers{k-1}*B;
             end
-            %TODO:
-            % 优化Psi计算：使用预计算C矩阵
             if k > 1
                 num_blocks = min(k-1, N);
                 Psi{k} = [AB{num_blocks:-1:1}, zeros(7, 4*(N - num_blocks))];
             else
                 Psi{k} = zeros(7, 4*N);
             end
-            %优化代码
-            %TODO:debug
-            %Upsilon
             if k<=N
                 Upsilon{k}=[zeros(4,4*(k-1)),eye(4),zeros(4,4*(N-k))];
             else
                 Upsilon{k}=zeros(4,4*N);
             end
-            %debug
-            %xi 重力+初始条件
             xi{k}=zeros(7,1);
             xi{k}=Phi{k}*x0+Lambda{k}*[g_mars;0];
         end
 
-        %测量时间
-        cal_time=toc(cal_start);
-        build_start=tic;
         % ==================== 优化问题求解 ====================
         % 定义决策变量
         p = sdpvar(4*N,1,'full');  % 控制参数，现在有 N 段
@@ -102,8 +93,6 @@ function optimal_result=solve_problem4(rocket)
         constraints = [constraints, norm(x_f(4:6) - vf) <= 1e-5];
         u_f = Upsilon{N}(1:3, :) * p(:);  % 末端控制加速度
         sigma_f = Upsilon{N}(4, :) * p(:); % 末端松弛变量
-        %constraints = [constraints, u_f == sigma_f * nf]; % 推力方向约束
-
         %预计算所有的sigma和u
         all_u=sdpvar(3,N);
         all_sigma=sdpvar(1,N);
@@ -128,20 +117,10 @@ function optimal_result=solve_problem4(rocket)
         % 预计算所有zk_min和zk_max
         zk_min_vec = arrayfun(@(k) log(m_wet - alpha*rho2*t(k)), 1:N+1);
         zk_max_vec = arrayfun(@(k) log(m_wet - alpha*rho1*t(k)), 1:N+1);
-        % 向量化高度约束和质量约束
-        %constraints =[constraints,all_heights(:) >= 0];
+        %质量约束
         constraints =[constraints,all_z >= zk_min_vec];
         constraints =[constraints,all_z<= zk_max_vec];
-        %{
-        constraints = [constraints,...
-            all_heights >= 0,...                    %保证火箭的高度始终大于0
-            all_z >= zk_min_vec,...                 % 所有zk_min约束
-            all_z <= zk_max_vec];                % 所有zk_max约束
-        %}
-            
-        % 向量化推力指向约束
-        % constraints = [constraints, v' * all_u >= gamma * all_sigma];
-
+        
         %推力限幅约束问题2：松弛变量范围
         %非线性约束，无法使用向量化约束
         for k = 2:N+1
@@ -156,11 +135,26 @@ function optimal_result=solve_problem4(rocket)
                 constraints = [constraints, sigma_k >= sigma_k_min, sigma_k <= sigma_k_max];
             end
         end
-        % 滑翔角约束（如果启用）
-        % for k = 1:N+1
-        %     r_k = all_states(1:3, k);
-        %     constraints = [constraints, norm(S*r_k) + c*r_k <= 0];
-        % end
+        %===== 额外约束 ====
+        %末端推力方向约束
+        if CONSTRAINTS_FINAL_THRUST_DRECT==true
+            constraints = [constraints, u_f == sigma_f * nf]; %末端推力方向约束
+        end
+        %高度>=0约束
+        if CONSTRAINTS_HEIGHT==true
+            constraints =[constraints,all_heights(:) >= 0];
+        end
+        % 滑翔角约束
+        if CONSTRAINTS_GLIDE==true
+            for k = 1:N+1
+                r_k = all_states(1:3, k);
+                constraints = [constraints, norm(S*r_k) + c*r_k <= 0];
+            end
+        end
+        % 向量化推力指向约束
+        if CONSTRAINTS_ALL_THRUST_DRECT==true
+            constraints = [constraints, v' * all_u >= gamma * all_sigma];
+        end
         % ==================== 计算代价函数 ====================
          % Minimize fuel consumption: J = ∫σ dt ≈ Σσ_k * Δt
         objective = 0;
@@ -170,20 +164,11 @@ function optimal_result=solve_problem4(rocket)
         end
         % ==================== 求解优化问题 ====================
         % 设置ECOS求解器
-        options = sdpsettings('solver', 'ecos', 'verbose', 0, 'cachesolvers', 1);
-        
-        build_time=toc(build_start);
+        options = sdpsettings('solver', 'ECOS', 'verbose', 0, 'cachesolvers', 1);
         % 求解问题
         diagnostics = optimize(constraints,objective, options);
-
-        %结束总时间测量
-        total_time=toc(total_start);
-        optimal_time=total_time-build_time-cal_time;
-        fprintf('求解该问题的总时间为：%f\n',total_time);
-        fprintf('预处理时间：%f\n',cal_time);
-        fprintf('建模时间：%f\n',build_time);
-        fprintf('优化时间为：%f\n',optimal_time);
-        time_vec(:,N-N_min+1)=[cal_time;build_time;optimal_time;total_time];
+        %记录时间
+        solver_time(N-N_min+1,1)=N;
         % 存储结果
         results(N-N_min+1).N = N;
         results(N-N_min+1).feasible = false;
@@ -192,15 +177,17 @@ function optimal_result=solve_problem4(rocket)
             results(N-N_min+1).cost = value(objective);
             results(N-N_min+1).p_opt = value(p);
             results(N-N_min+1).feasible = true;
-            fprintf('  Feasible solution found. Cost: %.2f\n', value(objective));
-            fprintf('  Feasible solution found. use fuel: %.2f\n', m_wet*(1-exp(-alpha*value(objective))));
+            solver_time(N-N_min+1,2)=diagnostics.solvertime;
+            fprintf('  Feasible solution found.\n');
+            fprintf('solvertime:%.2f\n',solver_time(N-N_min+1,2));
+            fprintf('use fuel:%.2f\n',m_wet*(1-exp(-alpha*value(objective))));
         else
             results(N-N_min+1).cost = Inf;
             results(N-N_min+1).feasible = false;
             fprintf('  No feasible solution found.\n');
         end
     end
-    assignin('base','time',time_vec);
+    assignin('base','solvertime',solver_time);
     % ==================== 寻找最优结果 ====================
     optimal_result=findbest(results,rocket);
 end

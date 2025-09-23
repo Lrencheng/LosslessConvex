@@ -69,17 +69,13 @@ function plotData(optimal_result)
         grid on;
         xlim([0, t_f_best]);
         ylim([0, 1]);       
-            % 添加参考线 - 使用转义字符处理特殊符号
+         % 添加参考线 - 使用转义字符处理特殊符号
         hold on;
         yline(0.3, 'r--', '最小推力 (30% Tmin)');
         yline(0.8, 'r--', '最大推力 (80% Tmax)');
         hold off;
-            % 显示统计信息
+        % 显示统计信息
         fprintf('最优轨迹时间tf:%d\n',t_f_best);
-        fprintf('推力统计信息:\n');
-        fprintf('平均推力比: %.3f\n', mean(thrust_ratio));
-        fprintf('最大推力比: %.3f\n', max(thrust_ratio));
-        fprintf('最小推力比: %.3f\n', min(thrust_ratio));
         %滑翔角
         subplot(3,2,6);
         plot(t_plot(1:end-1),theta_data(1:end-1),'g-', 'LineWidth', 1.5);
@@ -99,6 +95,7 @@ function plotData(optimal_result)
         legend('轨迹', '起点', '终点');
         grid on;
         % 显示统计信息
+        fprintf('最优轨迹时间tf:%d\n',t_f_best);
         fprintf('位置统计信息:\n');
         fprintf('起始位置: [%.1f, %.1f, %.1f] m\n', position_data(1,1), position_data(2,1), position_data(3,1));
         fprintf('终止位置: [%.1f, %.1f, %.1f] m\n', position_data(1,end), position_data(2,end), position_data(3,end));
@@ -107,6 +104,16 @@ function plotData(optimal_result)
         fprintf('起始速度: [%.1f, %.1f, %.1f] m/s\n', velocity_data(1,1), velocity_data(2,1), velocity_data(3,1));
         fprintf('终止速度: [%.1f, %.1f, %.1f] m/s\n', velocity_data(1,end), velocity_data(2,end), velocity_data(3,end));
         
+        % 绘制求解时间柱状图
+        solver_time = evalin('base', 'solvertime');
+        if ~isempty(solver_time)
+            figure;
+            bar(solver_time(:, 1), solver_time(:, 2));
+            xlabel('N');
+            ylabel('solvertime,s');
+            title('求解器运行时间随时间步数 N 的变化');
+            grid on;
+        end
     else
         fprintf('未找到可行解，无法绘制推力图。\n');
     end

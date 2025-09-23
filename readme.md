@@ -47,3 +47,6 @@ problem solved:
 problem:
 - matlab和最新版的yalmip都没有norms函数？只能用norm + 循环代替了
 - 还是没能完美复现论文中的实验
+### 2025/9/23
+bingo：
+- 优化后的代码计算总时间和以往区别不大，问了学长才知道真实计算时间应该看optimalize返回的solvertime

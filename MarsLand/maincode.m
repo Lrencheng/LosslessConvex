@@ -1,7 +1,6 @@
 %坐标系建立：[i,j,k]
 %i:高度
 %j,k:水平位移
-
 rocket.g_mars=[-3.7114;0;0];
 rocket.m_dry=1505;
 rocket.m_wet=1905;
@@ -57,6 +56,11 @@ rocket.A=expm(rocket.A_c*rocket.dt);
 rocket.B=integral(@(tau) expm(rocket.A_c * (rocket.dt - tau)) * ...
          rocket.B_c, 0, rocket.dt, 'ArrayValued', true);
 
+%% 是否添加额外约束
+rocket.CONSTRAINTS_FINAL_THRUST_DRECT=true;%末端推力约束
+rocket.CONSTRAINTS_HEIGHT=true;            %高度>=0约束
+rocket.CONSTRAINTS_ALL_THRUST_DRECT=false;  %全程推力指向约束（尚且不成熟）
+rocket.CONSTRAINTS_GLIDE=false;             %滑翔角约束
 %% 调用函数并结算
 optimal_result=solve_problem4(rocket);
 plotData(optimal_result);
