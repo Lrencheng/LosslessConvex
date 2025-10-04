@@ -4,14 +4,14 @@ function parameters()
     dt=tf/N;%时间间隔
     max_iterations=5;%最大迭代次数
     vel=1;%单位 m/s
-    z0=[0;0;0];%起始位置
+    z0=[0;0;0];%初始条件
     zf=[25;6];%终点位置
     % approach cone:达到终点的角度要求
     cone_deg=6;
     cone_horizon_deg=20;
 
     w_max_deg=8;
-    w_max_red=w_max_deg*pi/180;
+    w_max_rad=w_max_deg*pi/180;
 
     %目标函数参数
     k1=100;
@@ -41,7 +41,7 @@ function parameters()
     % 保存所有变量到para.mat
     filePath = fullfile(pwd, 'para.mat');
     save(filePath, 'tf', 'z0', 'zf', 'cone_deg', ...
-         'cone_horizon_deg','w_max_deg', 'w_max_red',...
+         'cone_horizon_deg','w_max_deg', 'w_max_rad',...
          'N', 'k1', 'k2', 'k3', 'yc', 'epsilon', 'vel',...
          'A','B','dt','obstacles','max_iterations','max_deltax','max_deltay');
 end
