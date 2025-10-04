@@ -1,5 +1,6 @@
 # Ignore all .asv files in the repository
 *.asv
+*.mat
 compare/
 # 忽略 demo1.m 文件
 demo1.m

@@ -3,15 +3,15 @@ function [x,y]=initialize_trajectory(params)
     x=zeros(N,1);
     y=zeros(N,1);
     waypoints=[0 0;
-               8 -0.8;
-               15 5.5;
-               25 16;];
+               10 -0.5;
+               14 5.5;
+               25 6;];
     n=size(waypoints,1);%航点个数
     seg=n-1;
     len=zeros(seg,1);
     sampleNum=zeros(seg,1);%各段采样个数
     for i=1:seg
-        vec=[waypoints(i+1,1)-waypoints(i,1),waypoints(i+1,2)-waypoints(i,2)]
+        vec=[waypoints(i+1,1)-waypoints(i,1),waypoints(i+1,2)-waypoints(i,2)];
         len(i)=norm(vec);
     end
     total=sum(len);
@@ -42,4 +42,5 @@ function [x,y]=initialize_trajectory(params)
     end
     x=[x;vec_x];
     y=[y;vec_y];
+    save('initial_state_profile.mat','x','y');
 end
