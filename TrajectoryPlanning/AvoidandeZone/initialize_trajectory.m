@@ -1,7 +1,7 @@
 function [x,y]=initialize_trajectory(params)
     N=params.N;
-    x=zeros(N,1);
-    y=zeros(N,1);
+    x=[];
+    y=[];
     waypoints=[0 0;
                10 -0.5;
                14 5.5;
@@ -18,7 +18,7 @@ function [x,y]=initialize_trajectory(params)
     for i=1:seg-1
         sampleNum(i)=fix(N*len(i)/total);
     end
-    sampleNum(seg)=N-sum(sampleNum(1:seg-1));
+    sampleNum(seg)=N+1-sum(sampleNum(1:seg-1));%保证总样本数为N+1
     
     for j=1:seg-1
         deta_x=(waypoints(j+1,1)-waypoints(j,1))/sampleNum(j);

@@ -8,4 +8,4 @@ params=load('para.mat');
 results=solve_problemD(x_init,y_init,params);
 
 %绘图
-plot_all(params);
+plot_all(params,results);

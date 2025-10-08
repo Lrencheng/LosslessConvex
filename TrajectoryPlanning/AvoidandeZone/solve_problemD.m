@@ -6,16 +6,24 @@ function results=solve_problemD(x_init,y_init,params)
     %记录迭代历史
     x_history=zeros(N+1,params.max_iterations+1);
     y_history=zeros(N+1,params.max_iterations+1);
-    cost_history=zeros(params.max_iterations+1);%代价函数值
+    cost_history=zeros(params.max_iterations);%代价函数值
     %迭代历史初始化：初始轨迹
     x_history(:,1)=x_init;
     y_history(:,1)=y_init;
     for k=1:params.max_iterations
         x_prev=x_history(:,k);
         y_prev=y_history(:,k);
+        %the core !!!
         [x_new,y_new,cost_new]=solve_convex_problem(params,x_prev,y_prev);
-        x_history(:,k)=x_new;
-        y_history(:,k)=y_new;
+
+        if isnan(cost_new)==true
+            fprintf('第%d次迭代:Feasible solution was not found.\n',k);
+        else
+            fprintf('第%d次迭代:Feasible solution was found.\n',k);
+            fprintf('cost: %.2f.\n',cost_new);
+        end
+        x_history(:,k+1)=x_new;
+        y_history(:,k+1)=y_new;
         cost_history(k)=cost_new;
 
         %设置迭代截止条件
@@ -25,19 +33,20 @@ function results=solve_problemD(x_init,y_init,params)
             break;
         end
     end
+    %存储结果
     results.x_history=x_history;
     results.y_history=y_history;
     results.cost_history=cost_history;
     results.act_iterations=act_iterations;
 end
 function [x_r,y_r,cost_r]=solve_convex_problem(params,x_prev,y_prev);
+    N=params.N;
+    dt=params.dt;
     % ==================== 优化问题建模 ====================
     constraints=[];
     %定义优化变量
     z=sdpvar(3,N+1);    %状态变量：x,y,theta_sine
     u=sdpvar(2,N+1);    %控制输入: theta_cosine,theta_d
-    N=params.N;
-    dt=params.dt;
     %状态变量初始化
     z(:,1)=params.z0;
     for i=1:N
@@ -57,7 +66,7 @@ function [x_r,y_r,cost_r]=solve_convex_problem(params,x_prev,y_prev);
         for j=1:length(params.obstacles)
             [grad_x,grad_y,dconst]=linearlize_gnc(prev,...
                                                   params.obstacles(j).xc,params.obstacles(j).yc,...
-                                                  paramsparams.obstacles(j).a,params.obstacles(j).b ...
+                                                  params.obstacles(j).a,params.obstacles(j).b ...
                                                  );
             constraints=[constraints,grad_x*curr.x+grad_y*curr.y+dconst<=0];
         end
@@ -68,9 +77,9 @@ function [x_r,y_r,cost_r]=solve_convex_problem(params,x_prev,y_prev);
     for i=1:N+1
         objective=objective+params.dt*(z(2,i)-params.yc)^2;
     end
-    objective=k1*(params.z(1,end)-params.zf(1))+...
-              k2*(params.z(2,end)-params.zf(2))+...
-              k3*objective;
+    objective=params.k1*abs(z(1,end)-params.zf(1))+...
+              params.k2*abs(z(2,end)-params.zf(2))+...
+              params.k3*objective;
     % ==================== 求解优化问题 ====================
     % 设置ECOS求解器
     options = sdpsettings('solver', 'ECOS', 'verbose', 0, 'cachesolvers', 1);
@@ -78,12 +87,10 @@ function [x_r,y_r,cost_r]=solve_convex_problem(params,x_prev,y_prev);
     diagnostics = optimize(constraints,objective, options);
 
     if diagnostics.problem == 0
-        fprintf('  Feasible solution found.\n');
         x_r=value(z(1,:));
         y_r=value(z(2,:));
         cost_r=value(objective);
     else
-        fprintf('  Feasible solution was not found.\n');
         x_r = NaN(1, N+1);
         y_r = NaN(1, N+1);
         cost_r = NaN;

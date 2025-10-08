@@ -1,4 +1,4 @@
-function plot_all(params)
+function plot_all(params,results)
     % 绘制初始轨迹进行验证
     
     init_curve=load('initial_state_profile.mat');
@@ -15,6 +15,14 @@ function plot_all(params)
     plot(x_init(1), y_init(1), 'bo', 'MarkerSize', 8, 'DisplayName', '起点');
     plot(x_init(end), y_init(end), 'ro', 'MarkerSize', 8, 'DisplayName', '终点');
     grid on;
+    hold on;
+
+    % 绘制最后的迭代轨迹
+    n=results.act_iterations;
+    x_curve=results.x_history(:,n+1);
+    y_curve=results.y_history(:,n+1);
+    plot(x_curve, y_curve, 'r', 'LineWidth', 1.5);
+
 end
 %障碍物绘图函数
 function plot_obstacles(obstacles)
