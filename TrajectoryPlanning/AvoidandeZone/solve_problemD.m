@@ -30,7 +30,7 @@ function results=solve_problemD(x_init,y_init,params)
     results.cost_history=cost_history;
     results.act_iterations=act_iterations;
 end
-function [x,y,cost]=solve_convex_problem(params,x_prev,y_prev);
+function [x_r,y_r,cost_r]=solve_convex_problem(params,x_prev,y_prev);
     % ==================== 优化问题建模 ====================
     constraints=[];
     %定义优化变量
@@ -63,7 +63,31 @@ function [x,y,cost]=solve_convex_problem(params,x_prev,y_prev);
         end
     end
     % ==================== 计算代价函数 ====================
+    %J=k1*|xN-xf|+k2*|yN-yf|+k3*∑(yi − yci )^2
+    objective=0;
+    for i=1:N+1
+        objective=objective+params.dt*(z(2,i)-params.yc)^2;
+    end
+    objective=k1*(params.z(1,end)-params.zf(1))+...
+              k2*(params.z(2,end)-params.zf(2))+...
+              k3*objective;
+    % ==================== 求解优化问题 ====================
+    % 设置ECOS求解器
+    options = sdpsettings('solver', 'ECOS', 'verbose', 0, 'cachesolvers', 1);
+    % 求解问题
+    diagnostics = optimize(constraints,objective, options);
 
+    if diagnostics.problem == 0
+        fprintf('  Feasible solution found.\n');
+        x_r=value(z(1,:));
+        y_r=value(z(2,:));
+        cost_r=value(objective);
+    else
+        fprintf('  Feasible solution was not found.\n');
+        x_r = NaN(1, N+1);
+        y_r = NaN(1, N+1);
+        cost_r = NaN;
+    end
 end
 function [grad_x,grad_y,dconst]=linearlize_gnc(prev,xc,yc,a,b)
     grad_x=-2*(prev.x-xc)/a^2;
