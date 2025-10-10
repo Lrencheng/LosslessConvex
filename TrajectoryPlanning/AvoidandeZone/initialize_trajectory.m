@@ -4,7 +4,7 @@ function [x,y]=initialize_trajectory(params)
     y=[];
     waypoints=[0 0;
                10 -0.5;
-               14 5.5;
+               15 5.5;
                25 6;];
     n=size(waypoints,1);%航点个数
     seg=n-1;
