@@ -7,11 +7,12 @@ function results=solve_problemD(x_init,y_init,params)
     x_history=zeros(N+1,params.max_iterations+1);
     y_history=zeros(N+1,params.max_iterations+1);
     cost_history=zeros(params.max_iterations);%代价函数值
+    max_delta_x=zeros(params.max_iterations);
+    max_delta_y=zeros(params.max_iterations);
+    runtime=zeros(params.max_iterations);
     %迭代历史初始化：初始轨迹
     x_history(:,1)=x_init;
     y_history(:,1)=y_init;
-    max_delta_x=zeros(params.max_iterations);
-    max_delta_y=zeros(params.max_iterations);
     %test:验证u1^2+z3^2是否为1
     add_history=zeros(N+1,params.max_iterations+1);
     for k=1:params.max_iterations
@@ -29,6 +30,7 @@ function results=solve_problemD(x_init,y_init,params)
         x_history(:,k+1)=solution.x;
         y_history(:,k+1)=solution.y;
         cost_history(k)=solution.cost;
+        runtime(k)=solution.runtime;
         %test:
         add_history(:,k)=solution.add;
         %设置迭代截止条件
@@ -47,6 +49,7 @@ function results=solve_problemD(x_init,y_init,params)
     results.act_iterations=act_iterations;
     results.max_delta_x=max_delta_x;
     results.max_delta_y=max_delta_y;
+    results.runtime=runtime;
     %test:
     results.add=add_history;
 end
@@ -96,7 +99,7 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
     options = sdpsettings('solver', 'ECOS', 'verbose', 0, 'cachesolvers', 1);
     % 求解问题
     diagnostics = optimize(constraints,objective, options);
-
+    solution.runtime=diagnostics.solvertime;
     if diagnostics.problem == 0
         solution.x=value(z(1,:));
         solution.y=value(z(2,:));
