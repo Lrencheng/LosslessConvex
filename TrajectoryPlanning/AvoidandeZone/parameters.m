@@ -18,7 +18,6 @@ function parameters()
     k2=100;
     k3=1;   
     yc=-1;%保证y-yc不为0
-    epsilon=[0.1;0.1];
     
     %迭代截止条件
     epsilon_x=0.001;
@@ -42,6 +41,6 @@ function parameters()
     filePath = fullfile(pwd, 'para.mat');
     save(filePath, 'tf', 'z0', 'zf', 'cone_deg', ...
          'cone_horizon_deg','w_max_deg', 'w_max_rad',...
-         'N', 'k1', 'k2', 'k3', 'yc', 'epsilon', 'vel',...
+         'N', 'k1', 'k2', 'k3', 'yc', 'vel',...
          'A','B','dt','obstacles','max_iterations','epsilon_x','epsilon_y');
 end

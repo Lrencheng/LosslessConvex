@@ -39,7 +39,11 @@ function plot_obstacles(obstacles)
         y = obstacles(i).yc + obstacles(i).b * sin(theta);
         
         % 绘制椭圆
-        plot(x, y, 'r-', 'LineWidth', 2);
+        plot(x, y, 'b-', 'LineWidth', 2);
+        hold on;
+        plot(obstacles(i).xc, obstacles(i).yc,...
+            'k+', 'MarkerSize', 8, 'MarkerFaceColor','r',...
+            'LineWidth',1);
         hold on;
     end
 end

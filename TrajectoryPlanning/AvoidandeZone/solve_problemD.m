@@ -32,8 +32,8 @@ function results=solve_problemD(x_init,y_init,params)
         %test:
         add_history(:,k)=solution.add;
         %设置迭代截止条件
-        max_delta_x(k)=max(abs(solution.x-x_prev));
-        max_delta_y(k)=max(abs(solution.y-y_prev));
+        max_delta_x(k)=max(abs(solution.x-x_prev'));
+        max_delta_y(k)=max(abs(solution.y-y_prev'));
         if max_delta_x(k)<=params.epsilon_x && ...
            max_delta_y(k)<=params.epsilon_y
             act_iterations=k;
