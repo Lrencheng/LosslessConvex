@@ -21,14 +21,14 @@ function parameters()
     epsilon=[0.1;0.1];
     
     %迭代截止条件
-    max_deltax=0.001;
-    max_deltay=0.001;
+    epsilon_x=0.001;
+    epsilon_y=0.001;
     %状态空间参数
     Ac=[0 0 0;
        0 0 vel;
        0 0 0;];
     Bc=[vel 0;0 0;0 1;];
-    A=expm(Ac);
+    A=expm(Ac*dt);
     B=integral(@(tau) expm(Ac * (dt - tau)) * Bc,...
                0, dt, 'ArrayValued', true);
 
@@ -43,5 +43,5 @@ function parameters()
     save(filePath, 'tf', 'z0', 'zf', 'cone_deg', ...
          'cone_horizon_deg','w_max_deg', 'w_max_rad',...
          'N', 'k1', 'k2', 'k3', 'yc', 'epsilon', 'vel',...
-         'A','B','dt','obstacles','max_iterations','max_deltax','max_deltay');
+         'A','B','dt','obstacles','max_iterations','epsilon_x','epsilon_y');
 end
