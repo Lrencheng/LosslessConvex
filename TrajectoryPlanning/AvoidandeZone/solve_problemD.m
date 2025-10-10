@@ -10,25 +10,32 @@ function results=solve_problemD(x_init,y_init,params)
     %迭代历史初始化：初始轨迹
     x_history(:,1)=x_init;
     y_history(:,1)=y_init;
+    max_delta_x=zeros(params.max_iterations);
+    max_delta_y=zeros(params.max_iterations);
+    %test:验证u1^2+z3^2是否为1
+    add_history=zeros(N+1,params.max_iterations+1);
     for k=1:params.max_iterations
         x_prev=x_history(:,k);
         y_prev=y_history(:,k);
         %the core !!!
-        [x_new,y_new,cost_new]=solve_convex_problem(params,x_prev,y_prev);
+        solution=solve_convex_problem(params,x_prev,y_prev);
 
-        if isnan(cost_new)==true
+        if isnan(solution.cost)==true
             fprintf('第%d次迭代:Feasible solution was not found.\n',k);
         else
             fprintf('第%d次迭代:Feasible solution was found.\n',k);
-            fprintf('cost: %.2f.\n',cost_new);
+            fprintf('cost: %.2f.\n',solution.cost);
         end
-        x_history(:,k+1)=x_new;
-        y_history(:,k+1)=y_new;
-        cost_history(k)=cost_new;
-
+        x_history(:,k+1)=solution.x;
+        y_history(:,k+1)=solution.y;
+        cost_history(k)=solution.cost;
+        %test:
+        add_history(:,k)=solution.add;
         %设置迭代截止条件
-        if abs(x_new(end)-params.zf(1))<=params.max_deltax && ...
-            abs(y_new(end)-params.zf(2))<=params.max_deltay
+        max_delta_x(k)=max(abs(solution.x-x_prev));
+        max_delta_y(k)=max(abs(solution.y-y_prev));
+        if max_delta_x(k)<=params.epsilon_x && ...
+           max_delta_y(k)<=params.epsilon_y
             act_iterations=k;
             break;
         end
@@ -38,8 +45,12 @@ function results=solve_problemD(x_init,y_init,params)
     results.y_history=y_history;
     results.cost_history=cost_history;
     results.act_iterations=act_iterations;
+    results.max_delta_x=max_delta_x;
+    results.max_delta_y=max_delta_y;
+    %test:
+    results.add=add_history;
 end
-function [x_r,y_r,cost_r]=solve_convex_problem(params,x_prev,y_prev);
+function solution=solve_convex_problem(params,x_prev,y_prev)
     N=params.N;
     dt=params.dt;
     % ==================== 优化问题建模 ====================
@@ -87,13 +98,16 @@ function [x_r,y_r,cost_r]=solve_convex_problem(params,x_prev,y_prev);
     diagnostics = optimize(constraints,objective, options);
 
     if diagnostics.problem == 0
-        x_r=value(z(1,:));
-        y_r=value(z(2,:));
-        cost_r=value(objective);
+        solution.x=value(z(1,:));
+        solution.y=value(z(2,:));
+        solution.cost=value(objective);
+        %test:验证u1^2+z3^2是否为1
+        solution.add=value(z(3,:)).^2+value(u(1,:)).^2;
+
     else
-        x_r = NaN(1, N+1);
-        y_r = NaN(1, N+1);
-        cost_r = NaN;
+        solution.x = NaN(1, N+1);
+        solution.y = NaN(1, N+1);
+        solution.cost = NaN;
     end
 end
 function [grad_x,grad_y,dconst]=linearlize_gnc(prev,xc,yc,a,b)
