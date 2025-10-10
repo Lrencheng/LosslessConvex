@@ -4,6 +4,8 @@ function results=solve_problemD(x_init,y_init,params)
 
     act_iterations=1;%真实迭代次数
     %记录迭代历史
+    z_history=cell(1,params.max_iterations+1);
+    u_history=cell(1,params.max_iterations+1);
     x_history=zeros(N+1,params.max_iterations+1);
     y_history=zeros(N+1,params.max_iterations+1);
     cost_history=zeros(params.max_iterations);%代价函数值
@@ -27,15 +29,17 @@ function results=solve_problemD(x_init,y_init,params)
             fprintf('第%d次迭代:Feasible solution was found.\n',k);
             fprintf('cost: %.2f.\n',solution.cost);
         end
-        x_history(:,k+1)=solution.x;
-        y_history(:,k+1)=solution.y;
+        z_history{k}=solution.z;
+        u_history{k}=solution.u;
+        x_history(:,k+1)=solution.z(1,:);
+        y_history(:,k+1)=solution.z(2,:);
         cost_history(k)=solution.cost;
         runtime(k)=solution.runtime;
         %test:
         add_history(:,k)=solution.add;
         %设置迭代截止条件
-        max_delta_x(k)=max(abs(solution.x-x_prev'));
-        max_delta_y(k)=max(abs(solution.y-y_prev'));
+        max_delta_x(k)=max(abs(solution.z(1,:)-x_prev'));
+        max_delta_y(k)=max(abs(solution.z(2,:)-y_prev'));
         if max_delta_x(k)<=params.epsilon_x && ...
            max_delta_y(k)<=params.epsilon_y
             act_iterations=k;
@@ -43,6 +47,8 @@ function results=solve_problemD(x_init,y_init,params)
         end
     end
     %存储结果
+    results.z_history=z_history;
+    results.u_history=u_history;
     results.x_history=x_history;
     results.y_history=y_history;
     results.cost_history=cost_history;
@@ -116,15 +122,15 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
     diagnostics = optimize(constraints,objective, options);
     solution.runtime=diagnostics.solvertime;
     if diagnostics.problem == 0
-        solution.x=value(z(1,:));
-        solution.y=value(z(2,:));
         solution.cost=value(objective);
+        solution.z=value(z);
+        solution.u=value(u);
         %test:验证u1^2+z3^2是否为1
         solution.add=value(z(3,:)).^2+value(u(1,:)).^2;
 
     else
-        solution.x = NaN(1, N+1);
-        solution.y = NaN(1, N+1);
+        solution.z = NaN(3, N+1);
+        solution.u = NaN(2, N+1);
         solution.cost = NaN;
     end
 end
