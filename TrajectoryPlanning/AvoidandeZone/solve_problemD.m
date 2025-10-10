@@ -70,8 +70,23 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
     for i=1:N+1
         constraints=[constraints,Wmax*u(:,i)<=0];%|u2|<=wmax*|u1|
         constraints=[constraints,u(1,i)^2+z(3,i)^2<=1];%u1^2+z3^2<=1
+        %constraints=[constraints,u(1,i)>=0];%assumption 1:|theta|<=pi/2
     end
-    % 非凸约束线性化
+
+    %approach cone约束：
+    Angle1=params.cone_horizon_deg-params.cone_deg/2;
+    Angle2=params.cone_horizon_deg+params.cone_deg/2;
+    n1=[-cosd(Angle1) sind(Angle1)];
+    n2=[cosd(Angle2) -sind(Angle2)];
+    start_idx=round((1-params.Inside_cone_percent)*(N+1));
+    for i=start_idx:N+1
+        rel_pos=[params.zf(2)-z(2,i);
+                 params.zf(1)-z(1,i)];     %相对位置
+        constraints=[constraints,n1*rel_pos<=0];
+        constraints=[constraints,n2*rel_pos<=0];
+    end
+
+    % 非凸约束线性化：避障
     for i=1:N+1
         prev.x=x_prev(i);
         prev.y=y_prev(i);

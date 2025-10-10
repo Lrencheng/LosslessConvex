@@ -6,9 +6,10 @@ function parameters()
     vel=1;%单位 m/s
     z0=[0;0;0];%初始条件
     zf=[25;6];%终点位置
-    % approach cone:达到终点的角度要求
+    % approach cone约束参数
     cone_deg=6;
     cone_horizon_deg=20;
+    Inside_cone_percent=0.2;%在cone内的点数占总点数的百分比
 
     w_max_deg=8;
     w_max_rad=w_max_deg*pi/180;
@@ -20,8 +21,8 @@ function parameters()
     yc=-1;%保证y-yc不为0
     
     %迭代截止条件
-    epsilon_x=0.001;
-    epsilon_y=0.001;
+    epsilon_x=0.01;
+    epsilon_y=0.01;
     %状态空间参数
     Ac=[0 0 0;
        0 0 vel;
@@ -41,6 +42,6 @@ function parameters()
     filePath = fullfile(pwd, 'para.mat');
     save(filePath, 'tf', 'z0', 'zf', 'cone_deg', ...
          'cone_horizon_deg','w_max_deg', 'w_max_rad',...
-         'N', 'k1', 'k2', 'k3', 'yc', 'vel',...
+         'N', 'k1', 'k2', 'k3', 'yc', 'vel','Inside_cone_percent',...
          'A','B','dt','obstacles','max_iterations','epsilon_x','epsilon_y');
 end
