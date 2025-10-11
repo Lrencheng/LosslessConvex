@@ -3,8 +3,8 @@ function [x,y]=initialize_trajectory(params)
     x=[];
     y=[];
     waypoints=[0 0;
-               10 -0.5;
-               15 5.5;
+               8 -0.2;
+               15 5.8;
                25 6;];
     n=size(waypoints,1);%航点个数
     seg=n-1;

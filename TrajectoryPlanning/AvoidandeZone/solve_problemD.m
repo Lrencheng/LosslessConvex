@@ -24,7 +24,11 @@ function results=solve_problemD(x_init,y_init,params)
         solution=solve_convex_problem(params,x_prev,y_prev);
 
         if isnan(solution.cost)==true
-            fprintf('第%d次迭代:Feasible solution was not found.\n',k);
+            if k==1
+                error('第一次迭代失败>>问题无解\n');
+            else
+                fprintf('第%d次迭代:Feasible solution was not found.\n',k);
+            end
         else
             fprintf('第%d次迭代:Feasible solution was found.\n',k);
             fprintf('cost: %.2f.\n',solution.cost);
@@ -132,6 +136,8 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
         solution.z = NaN(3, N+1);
         solution.u = NaN(2, N+1);
         solution.cost = NaN;
+        %test:验证u1^2+z3^2是否为1
+        solution.add=NaN(1,N+1);
     end
 end
 function [grad_x,grad_y,dconst]=linearlize_gnc(prev,xc,yc,a,b)

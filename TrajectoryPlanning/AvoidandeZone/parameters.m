@@ -36,7 +36,7 @@ function parameters()
     obstacles = [
         struct('xc', 5, 'yc', -2.2, 'a', 1, 'b', 1.8);   % 障碍物1
         struct('xc', 7, 'yc', 2, 'a', 2, 'b', 2.2);     % 障碍物2  
-        struct('xc', 15.2, 'yc', 1, 'a', 3, 'b', 3); % 障碍物3
+        struct('xc', 16, 'yc', 1, 'a', 3, 'b', 3); % 障碍物3
     ];
     % 保存所有变量到para.mat
     filePath = fullfile(pwd, 'para.mat');
