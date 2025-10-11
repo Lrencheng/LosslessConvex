@@ -21,8 +21,8 @@ function parameters()
     yc=-1;%保证y-yc不为0
     
     %迭代截止条件
-    epsilon_x=0.01;
-    epsilon_y=0.01;
+    epsilon_x=0.1;
+    epsilon_y=0.1;
     %状态空间参数
     Ac=[0 0 0;
        0 0 vel;
