@@ -1,5 +1,6 @@
 function plot_all(params,results)
-    t_plot=linspace(0,params.tf,params.N+1)';
+    N=params.N;
+    t_plot=linspace(0,params.tf,N+1)';
     % 绘制初始轨迹进行验证
     
     init_curve=load('initial_state_profile.mat');
@@ -72,8 +73,8 @@ function plot_all(params,results)
     % 转换为角度制
     theta_deg = asind(theta_sin)';
     plot(t_plot,theta_deg, 'r-', 'LineWidth', 2);
-    xlabel('时间步');
-    ylabel('航向角 (度)');
+    xlabel('Time (s)');
+    ylabel('航向角 (deg)');
     title('航向角变化曲线');
     grid on;
 
@@ -83,12 +84,35 @@ function plot_all(params,results)
     omega = results.u_history{n}(2,:)./results.u_history{n}(1,:);
     omega=(omega.*(180/pi))';
     plot(t_plot,omega, 'b-', 'LineWidth', 2);
-    xlabel('时间步');
+    hold on;
+    plot(8.*ones(1, fix(params.tf)+1), 'r--');
+    hold on;
+    plot(-8.*ones(1, fix(params.tf)+1), 'r--');
+    xlabel('Time (s)');
     ylabel('角速度 (rad/s)');
     title('角速度变化曲线');
     grid on;
 
     save('data.mat','theta_deg','omega');
+
+    %绘制add_history
+    figure
+    % 绘制add_history散点图
+    add_data = results.add(:, n);  % 获取最后一次迭代的add_history数据
+    % 绘制蓝色空心圆散点图（1:N的数据点）
+    scatter(1:N, add_data(1:N), 'o', 'MarkerFaceColor', 'none', 'MarkerEdgeColor', 'blue', 'LineWidth', 1.5);
+    hold on;
+    % 绘制y=1的红色实线作为对照
+    plot(1:N, ones(1, N), 'r-', 'LineWidth', 1.5);
+    % 设置坐标轴范围
+    xlim([1, 100]);
+    ylim([0, 1.3]);
+
+    xlabel('Time (s)');
+    ylabel('u_1^2 + z_3^2');
+    legend('= u_1^2 + z_3^2', '= 1', 'Location', 'best');
+    grid on;
+
 end
 %障碍物绘图函数
 function plot_obstacles(obstacles)

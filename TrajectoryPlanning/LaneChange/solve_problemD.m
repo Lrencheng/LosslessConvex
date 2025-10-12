@@ -42,13 +42,16 @@ function results=solve_problemD(x_init,y_init,params)
         %test:
         add_history(:,k)=solution.add;
         %设置迭代截止条件
+
         max_delta_x(k)=max(abs(solution.z(1,:)-x_prev'));
         max_delta_y(k)=max(abs(solution.z(2,:)-y_prev'));
+        %{
         if max_delta_x(k)<=params.epsilon_x && ...
            max_delta_y(k)<=params.epsilon_y
             act_iterations=k;
             break;
         end
+        %}
     end
     %存储结果
     results.z_history=z_history;
@@ -74,26 +77,14 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
     %状态变量初始化
     z(:,1)=params.z0;
     for i=1:N
-         constraints=[constraints,z(:,i+1) == z(:,i)+dt*(params.Ac*z(:,i) + params.Bc*u(:,i))];
+        %constraints = [constraints, z(:,i+1) == params.A * z(:,i) + params.B * u(:,i)];
+        constraints=[constraints,z(:,i+1) == z(:,i)+dt*(params.Ac*z(:,i) + params.Bc*u(:,i))];
     end
     Wmax=[-params.w_max_rad 1;-params.w_max_rad -1];
-    %{
-    for i=1:N+1
-        constraints=[constraints,Wmax*u(:,i)<=0];%|u2|<=wmax*|u1|
-        constraints=[constraints,u(1,i)^2+z(3,i)^2<=1];%u1^2+z3^2<=1
-        %constraints=[constraints,u(1,i)>=0];%assumption 1:|theta|<=pi/2
-    end
-    %}
     for i=1:N+1
         % 正确的控制约束
         constraints=[constraints,Wmax*u(:,i)<=0];%|u2|<=wmax*|u1|
-        constraints=[constraints, u(1,i)^2 + z(3,i)^2 <= 1];
-
-        %test
-        %constraints=[constraints,u(1,i)<=1];
-        %constraints=[constraints,u(1,i)>=0.3];
-        %constraints=[constraints,z(3,i)<=1];
-        %constraints=[constraints,z(3,i)>=-1];
+        constraints=[constraints, u(1,i)^2 + z(3,i)^2 <= 1];%core:凸松弛
     end
     % 非凸约束线性化：避障
     %{
@@ -114,12 +105,13 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
     % ==================== 计算代价函数 ====================
     %J=k1*|xN-xf|+k2*|yN-yf|+k3*∑(yi − yci )^2
     objective=0;
-    for i=1:N+1
-        if i<params.change_idx
-            objective=objective+params.dt*(z(2,i)-params.yc1)^2;
-        else 
-            objective=objective+params.dt*(z(2,i)-params.yc2)^2;
+    for i = 1:N+1
+        if i <= params.change_idx
+            y_ref = params.yc1;
+        else
+            y_ref = params.yc2;
         end
+        objective = objective + dt*(z(2,i) - y_ref)^2;
     end
     objective=params.k1*abs(z(1,end)-params.zf(1))+...
               params.k2*abs(z(2,end)-params.zf(2))+...
