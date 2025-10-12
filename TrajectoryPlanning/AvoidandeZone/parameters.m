@@ -17,7 +17,7 @@ function parameters()
     %目标函数参数
     k1=100;
     k2=100;
-    k3=1;   
+    k3=1.2;   
     yc=-1;%保证y-yc不为0
     
     %迭代截止条件
@@ -34,13 +34,13 @@ function parameters()
 
     %定义障碍物参数
     obstacles = [
-        struct('xc', 5, 'yc', -2.2, 'a', 1, 'b', 1.8);   % 障碍物1
+        struct('xc', 5, 'yc', -2.2, 'a', 2, 'b', 1.8);   % 障碍物1
         struct('xc', 7, 'yc', 2, 'a', 2, 'b', 2.2);     % 障碍物2  
         struct('xc', 16, 'yc', 1, 'a', 3, 'b', 3); % 障碍物3
     ];
     % 保存所有变量到para.mat
     filePath = fullfile(pwd, 'para.mat');
-    save(filePath, 'tf', 'z0', 'zf', 'cone_deg', ...
+    save(filePath, 'tf', 'z0', 'zf', 'cone_deg','Ac','Bc', ...
          'cone_horizon_deg','w_max_deg', 'w_max_rad',...
          'N', 'k1', 'k2', 'k3', 'yc', 'vel','Inside_cone_percent',...
          'A','B','dt','obstacles','max_iterations','epsilon_x','epsilon_y');

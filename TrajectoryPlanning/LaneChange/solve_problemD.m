@@ -74,15 +74,27 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
     %状态变量初始化
     z(:,1)=params.z0;
     for i=1:N
-        z(:,i+1)=params.A*z(:,i)+params.B*u(:,i);
+         constraints=[constraints,z(:,i+1) == z(:,i)+dt*(params.Ac*z(:,i) + params.Bc*u(:,i))];
     end
     Wmax=[-params.w_max_rad 1;-params.w_max_rad -1];
+    %{
     for i=1:N+1
         constraints=[constraints,Wmax*u(:,i)<=0];%|u2|<=wmax*|u1|
         constraints=[constraints,u(1,i)^2+z(3,i)^2<=1];%u1^2+z3^2<=1
         %constraints=[constraints,u(1,i)>=0];%assumption 1:|theta|<=pi/2
     end
+    %}
+    for i=1:N+1
+        % 正确的控制约束
+        constraints=[constraints,Wmax*u(:,i)<=0];%|u2|<=wmax*|u1|
+        constraints=[constraints, u(1,i)^2 + z(3,i)^2 <= 1];
 
+        %test
+        %constraints=[constraints,u(1,i)<=1];
+        %constraints=[constraints,u(1,i)>=0.3];
+        %constraints=[constraints,z(3,i)<=1];
+        %constraints=[constraints,z(3,i)>=-1];
+    end
     % 非凸约束线性化：避障
     %{
     for i=1:N+1
