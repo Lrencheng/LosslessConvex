@@ -2,7 +2,7 @@ function parameters()
     tf=26.5;%总时间 单位[s]
     N=100;%离散点数
     dt=tf/N;%时间间隔
-    max_iterations=3;%最大迭代次数
+    max_iterations=5;%最大迭代次数
     USE_ITERATION=false;%使用迭代条件
     vel=1;%单位 m/s
     z0=[0;0;0];%初始条件
@@ -10,7 +10,7 @@ function parameters()
     % approach cone约束参数
     cone_deg=6;
     cone_horizon_deg=20;
-    Inside_cone_percent=0.2;%在cone内的点数占总点数的百分比
+    Inside_cone_percent=0.1;%在cone内的点数占总点数的百分比
 
     w_max_deg=8;
     w_max_rad=w_max_deg*pi/180;
@@ -36,7 +36,7 @@ function parameters()
     %定义障碍物参数
     obstacles = [
         struct('xc', 5, 'yc', -2.2, 'a', 2, 'b', 1.8);   % 障碍物1
-        struct('xc', 7, 'yc', 2, 'a', 2, 'b', 2.2);     % 障碍物2  
+        struct('xc', 7, 'yc', 2, 'a', 2, 'b', 2.1);     % 障碍物2  
         struct('xc', 16, 'yc', 1, 'a', 3, 'b', 3); % 障碍物3
     ];
     % 保存所有变量到para.mat

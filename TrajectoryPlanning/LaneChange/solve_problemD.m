@@ -45,13 +45,13 @@ function results=solve_problemD(x_init,y_init,params)
 
         max_delta_x(k)=max(abs(solution.z(1,:)-x_prev'));
         max_delta_y(k)=max(abs(solution.z(2,:)-y_prev'));
-        %{
-        if max_delta_x(k)<=params.epsilon_x && ...
-           max_delta_y(k)<=params.epsilon_y
-            act_iterations=k;
-            break;
+        if params.USE_ITERATION==true
+            if max_delta_x(k)<=params.epsilon_x && ...
+            max_delta_y(k)<=params.epsilon_y
+                act_iterations=k;
+                break;
+            end
         end
-        %}
     end
     %存储结果
     results.z_history=z_history;
