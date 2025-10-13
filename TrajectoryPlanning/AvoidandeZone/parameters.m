@@ -2,7 +2,8 @@ function parameters()
     tf=26.5;%总时间 单位[s]
     N=100;%离散点数
     dt=tf/N;%时间间隔
-    max_iterations=5;%最大迭代次数
+    max_iterations=3;%最大迭代次数
+    USE_ITERATION=false;%使用迭代条件
     vel=1;%单位 m/s
     z0=[0;0;0];%初始条件
     zf=[25;6];%终点位置
@@ -41,7 +42,7 @@ function parameters()
     % 保存所有变量到para.mat
     filePath = fullfile(pwd, 'para.mat');
     save(filePath, 'tf', 'z0', 'zf', 'cone_deg','Ac','Bc', ...
-         'cone_horizon_deg','w_max_deg', 'w_max_rad',...
+         'cone_horizon_deg','w_max_deg', 'w_max_rad','USE_ITERATION',...
          'N', 'k1', 'k2', 'k3', 'yc', 'vel','Inside_cone_percent',...
          'A','B','dt','obstacles','max_iterations','epsilon_x','epsilon_y');
 end
