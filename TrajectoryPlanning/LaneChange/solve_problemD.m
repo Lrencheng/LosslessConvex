@@ -18,6 +18,7 @@ function results=solve_problemD(x_init,y_init,params)
     %test:验证u1^2+z3^2是否为1
     add_history=zeros(N+1,params.max_iterations+1);
     for k=1:params.max_iterations
+        act_iterations=k;   %记录实际迭代次数
         x_prev=x_history(:,k);
         y_prev=y_history(:,k);
         %the core !!!
@@ -48,7 +49,6 @@ function results=solve_problemD(x_init,y_init,params)
         if params.USE_ITERATION==true
             if max_delta_x(k)<=params.epsilon_x && ...
             max_delta_y(k)<=params.epsilon_y
-                act_iterations=k;
                 break;
             end
         end
@@ -65,6 +65,7 @@ function results=solve_problemD(x_init,y_init,params)
     results.runtime=runtime;
     %test:
     results.add=add_history;
+    results.problem=solution.problem;
 end
 function solution=solve_convex_problem(params,x_prev,y_prev)
     N=params.N;
@@ -87,21 +88,21 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
         constraints=[constraints, u(1,i)^2 + z(3,i)^2 <= 1];%core:凸松弛
     end
     % 非凸约束线性化：避障
-    %{
-    for i=1:N+1
-        prev.x=x_prev(i);
-        prev.y=y_prev(i);
-        curr.x=z(1,i);
-        curr.y=z(2,i);
-        for j=1:length(params.obstacles)
-            [grad_x,grad_y,dconst]=linearlize_gnc(prev,...
-                                                params.obstacles(j).xc,params.obstacles(j).yc,...
-                                                params.obstacles(j).a,params.obstacles(j).b ...
-                                                );
-            constraints=[constraints,grad_x*curr.x+grad_y*curr.y+dconst<=0];
+    if params.USE_AVOIDANCE==true
+        for i=1:N+1
+            prev.x=x_prev(i);
+            prev.y=y_prev(i);
+            curr.x=z(1,i);
+            curr.y=z(2,i);
+            for j=1:length(params.obstacles)
+                [grad_x,grad_y,dconst]=linearlize_gnc(prev,...
+                                                    params.obstacles(j).xc,params.obstacles(j).yc,...
+                                                    params.obstacles(j).a,params.obstacles(j).b ...
+                                                    );
+                constraints=[constraints,grad_x*curr.x+grad_y*curr.y+dconst<=0];
+            end
         end
     end
-    %}
     % ==================== 计算代价函数 ====================
     %J=k1*|xN-xf|+k2*|yN-yf|+k3*∑(yi − yci )^2
     objective=0;
@@ -122,20 +123,22 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
     % 求解问题
     diagnostics = optimize(constraints,objective, options);
     solution.runtime=diagnostics.solvertime;
-    if diagnostics.problem == 0
+    %if diagnostics.problem == 0
         solution.cost=value(objective);
         solution.z=value(z);
         solution.u=value(u);
         %test:验证u1^2+z3^2是否为1
         solution.add=value(z(3,:)).^2+value(u(1,:)).^2;
 
-    else
-        solution.z = NaN(3, N+1);
-        solution.u = NaN(2, N+1);
-        solution.cost = NaN;
+    %else
+        %solution.z = NaN(3, N+1);
+        %solution.u = NaN(2, N+1);
+        %solution.cost = NaN;
         %test:验证u1^2+z3^2是否为1
-        solution.add=NaN(1,N+1);
-    end
+        %solution.add=NaN(1,N+1);
+    %end
+    %test
+    solution.problem=diagnostics.problem;
 end
 function [grad_x,grad_y,dconst]=linearlize_gnc(prev,xc,yc,a,b)
     grad_x=-2*(prev.x-xc)/a^2;
