@@ -9,8 +9,8 @@ function results=solve_problemD(x_init,y_init,params)
     x_history=zeros(N+1,params.max_iterations+1);
     y_history=zeros(N+1,params.max_iterations+1);
     cost_history=zeros(params.max_iterations);%代价函数值
-    max_delta_x=zeros(params.max_iterations);
-    max_delta_y=zeros(params.max_iterations);
+    max_delta_x=zeros(params.max_iterations,1);
+    max_delta_y=zeros(params.max_iterations,1);
     runtime=zeros(params.max_iterations);
     %迭代历史初始化：初始轨迹
     x_history(:,1)=x_init;

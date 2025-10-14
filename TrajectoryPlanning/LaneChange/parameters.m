@@ -14,7 +14,7 @@ function parameters()
     %目标函数参数
     k1=1;
     k2=1;
-    k3=1;   
+    k3=1;%k3=1  | k3=1000
     yc1=1.75;%x在[0,70)
     yc2=5.25;%x在[70,100]
     change_idx=70;

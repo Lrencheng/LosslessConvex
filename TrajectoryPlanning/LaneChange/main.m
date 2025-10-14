@@ -14,4 +14,5 @@ fprintf('>>无障碍物迭代：\n');
 params.USE_AVOIDANCE=false;
 results2=solve_problemD(x_init,y_init,params);
 %绘图
+%plot_all1(params,results2);
 plot_all(params,results1,results2);
