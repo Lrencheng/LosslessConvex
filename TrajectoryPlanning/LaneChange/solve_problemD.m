@@ -123,21 +123,12 @@ function solution=solve_convex_problem(params,x_prev,y_prev)
     % 求解问题
     diagnostics = optimize(constraints,objective, options);
     solution.runtime=diagnostics.solvertime;
-    %if diagnostics.problem == 0
-        solution.cost=value(objective);
-        solution.z=value(z);
-        solution.u=value(u);
-        %test:验证u1^2+z3^2是否为1
-        solution.add=value(z(3,:)).^2+value(u(1,:)).^2;
-
-    %else
-        %solution.z = NaN(3, N+1);
-        %solution.u = NaN(2, N+1);
-        %solution.cost = NaN;
-        %test:验证u1^2+z3^2是否为1
-        %solution.add=NaN(1,N+1);
-    %end
-    %test
+    solution.cost=value(objective);
+    solution.z=value(z);
+    solution.u=value(u);
+    %test:验证u1^2+z3^2是否为1
+    solution.add=value(z(3,:)).^2+value(u(1,:)).^2;
+    %test:诊断问题
     solution.problem=diagnostics.problem;
 end
 function [grad_x,grad_y,dconst]=linearlize_gnc(prev,xc,yc,a,b)
