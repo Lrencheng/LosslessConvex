@@ -1,7 +1,7 @@
 # LosslessConvex:无损凸化方法
 > 使用matlab语言复现使用无损凸化方法的论文
 > 
-> Email:3036446522@qq.com
+> my Email:3036446522@qq.com
 
 |项目|描述|
 |:-:|:-:|
