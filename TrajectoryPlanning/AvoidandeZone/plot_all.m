@@ -112,7 +112,29 @@ function plot_all(params,results)
     ylabel('u_1^2 + z_3^2');
     legend('= u_1^2 + z_3^2', '= 1', 'Location', 'best');
     grid on;
+    % 验证Assumption 2
+    index1=fix(13/params.dt);
+    index2=fix(18.6/params.dt);
+    t_assump2=t_plot(index1:index2);
+    x_assump2=x_curve(index1:index2);
+    y_assump2=y_curve(index1:index2);
+    isactive=zeros(index2-index1+1,1);
+    for i=index1:index2
+        isactive(i-index1+1)=isactive_assump2(x_curve(i),y_curve(i),params);
+    end
+    figure;
+    plot(t_assump2, isactive, 'ro', 'MarkerSize', 6);
+    title('约束激活验证');
+    xlim([12,18]);
+    ylim([-1.2,1.2]);
+% 获取当前坐标轴范围
+xlim_val = get(gca, 'XLim');
+ylim_val = get(gca, 'YLim');
 
+% 在图的右上角添加文本
+text(xlim_val(2)*0.92, ylim_val(2)*-0.7, '1:点在边界外');
+text(xlim_val(2)*0.92, ylim_val(2)*-0.8, '0:点在边界上');
+text(xlim_val(2)*0.92, ylim_val(2)*-0.9, '-1:点在边界内');
 end
 %障碍物绘图函数
 function plot_obstacles(obstacles)
@@ -136,4 +158,21 @@ function plot_obstacles(obstacles)
             'LineWidth',1);
         hold on;
     end
+end
+
+function isactive=isactive_assump2(x,y,params)
+    xc=params.obstacles(3).xc;
+    yc=params.obstacles(3).yc;
+    a=params.obstacles(3).a;
+    b=params.obstacles(3).b;
+    flag=1-(x/a)^2-(y/b)^2;
+
+    if abs(flag)<=10e-5
+        isactive=0;%约束激活
+    elseif flag>10e-5
+        isactive=-1;%点在边界内
+    else 
+        isactive=1;%点在边界外
+    end
+
 end
